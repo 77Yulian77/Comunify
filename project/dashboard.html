@@ -1,0 +1,469 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/assets/logo-icon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Comunify - Panel Administrativo</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: { colors: { comunify: { blue: '#0D9488', 'blue-light': '#14B8A6', 'blue-dark': '#0F766E' } } } }
+    }
+  </script>
+  <link rel="stylesheet" href="/css/custom.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+<body class="bg-gray-100 text-gray-900 min-h-screen">
+
+  <!-- Navbar -->
+  <nav class="bg-white border-b border-gray-200 sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
+        <div class="flex items-center gap-4">
+          <img src="/assets/logo-comunify.png" alt="Comunify" class="h-16">
+          <span class="hidden sm:inline text-sm text-gray-400">|</span>
+          <span class="hidden sm:inline text-sm font-medium text-gray-600">Panel administrativo</span>
+        </div>
+        <div class="flex items-center gap-4">
+          <span id="admin-email" class="text-sm text-gray-500 hidden sm:inline"></span>
+          <a href="qr-generator.html" class="text-gray-600 hover:text-comunify-blue text-sm font-medium transition-colors flex items-center gap-1.5">
+            <i data-lucide="qr-code" class="w-4 h-4"></i>
+            <span class="hidden sm:inline">Generar QR</span>
+          </a>
+          <button id="logout-btn" class="text-red-600 hover:text-red-700 text-sm font-medium transition-colors flex items-center gap-1.5">
+            <i data-lucide="log-out" class="w-4 h-4"></i>
+            <span class="hidden sm:inline">Cerrar sesión</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+    <!-- Stats -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div class="bg-white rounded-xl card-shadow p-5">
+        <div class="flex items-center justify-between mb-2">
+          <p class="text-sm text-gray-500">Total</p>
+          <div class="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
+            <i data-lucide="inbox" class="w-4 h-4 text-gray-600"></i>
+          </div>
+        </div>
+        <p id="stat-total" class="text-2xl font-bold text-gray-900">-</p>
+      </div>
+      <div class="bg-white rounded-xl card-shadow p-5">
+        <div class="flex items-center justify-between mb-2">
+          <p class="text-sm text-gray-500">Pendientes</p>
+          <div class="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center">
+            <i data-lucide="clock" class="w-4 h-4 text-amber-600"></i>
+          </div>
+        </div>
+        <p id="stat-pendientes" class="text-2xl font-bold text-amber-600">-</p>
+      </div>
+      <div class="bg-white rounded-xl card-shadow p-5">
+        <div class="flex items-center justify-between mb-2">
+          <p class="text-sm text-gray-500">En Proceso</p>
+          <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+            <i data-lucide="loader" class="w-4 h-4 text-blue-600"></i>
+          </div>
+        </div>
+        <p id="stat-proceso" class="text-2xl font-bold text-comunify-blue">-</p>
+      </div>
+      <div class="bg-white rounded-xl card-shadow p-5">
+        <div class="flex items-center justify-between mb-2">
+          <p class="text-sm text-gray-500">Resueltos</p>
+          <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+            <i data-lucide="check-circle" class="w-4 h-4 text-green-600"></i>
+          </div>
+        </div>
+        <p id="stat-resueltos" class="text-2xl font-bold text-green-600">-</p>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white rounded-xl card-shadow p-4 mb-6">
+      <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">Torre</label>
+          <select id="filter-torre" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-comunify-blue focus:border-transparent">
+            <option value="all">Todas</option>
+            <option value="A">Torre A</option>
+            <option value="B">Torre B</option>
+            <option value="C">Torre C</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">Piso</label>
+          <select id="filter-piso" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-comunify-blue focus:border-transparent">
+            <option value="all">Todos</option>
+            <option value="1">Piso 1</option><option value="2">Piso 2</option><option value="3">Piso 3</option>
+            <option value="4">Piso 4</option><option value="5">Piso 5</option><option value="6">Piso 6</option>
+            <option value="7">Piso 7</option><option value="8">Piso 8</option><option value="9">Piso 9</option>
+            <option value="10">Piso 10</option><option value="11">Piso 11</option><option value="12">Piso 12</option><option value="13">Piso 13</option><option value="14">Piso 14</option><option value="15">Piso 15</option><option value="16">Piso 16</option><option value="17">Piso 17</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">Estado</label>
+          <select id="filter-estado" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-comunify-blue focus:border-transparent">
+            <option value="all">Todos</option>
+            <option value="Pendiente">Pendiente</option>
+            <option value="En Proceso">En Proceso</option>
+            <option value="Resuelto">Resuelto</option>
+          </select>
+        </div>
+        <div class="flex items-end">
+          <button id="clear-filters" class="w-full border border-gray-300 hover:bg-gray-50 text-gray-600 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2">
+            <i data-lucide="x" class="w-4 h-4"></i>
+            Limpiar filtros
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="bg-white rounded-xl card-shadow overflow-hidden">
+      <div class="table-wrapper">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="bg-gray-50 border-b border-gray-200 text-left">
+              <th class="px-4 py-3 font-semibold text-gray-600 text-xs uppercase tracking-wide">Ticket</th>
+              <th class="px-4 py-3 font-semibold text-gray-600 text-xs uppercase tracking-wide">Torre</th>
+              <th class="px-4 py-3 font-semibold text-gray-600 text-xs uppercase tracking-wide">Piso</th>
+              <th class="px-4 py-3 font-semibold text-gray-600 text-xs uppercase tracking-wide">Zona</th>
+              <th class="px-4 py-3 font-semibold text-gray-600 text-xs uppercase tracking-wide">Estado</th>
+              <th class="px-4 py-3 font-semibold text-gray-600 text-xs uppercase tracking-wide">Fecha</th>
+              <th class="px-4 py-3 font-semibold text-gray-600 text-xs uppercase tracking-wide text-right">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="incidencias-tbody">
+            <tr>
+              <td colspan="7" class="px-4 py-12 text-center text-gray-400">
+                <div class="flex flex-col items-center gap-3">
+                  <div class="spinner"></div>
+                  <p class="text-sm">Cargando incidencias...</p>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Change State Modal -->
+  <div id="state-modal" class="fixed inset-0 z-50 hidden items-center justify-center modal-backdrop p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 animate-fade-in-up">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 bg-comunify-blue/10 rounded-xl flex items-center justify-center">
+          <i data-lucide="refresh-cw" class="w-5 h-5 text-comunify-blue"></i>
+        </div>
+        <div>
+          <h3 class="text-lg font-bold text-gray-900">Cambiar estado</h3>
+          <p class="text-sm text-gray-500">Ticket: <span id="modal-ticket" class="font-semibold text-comunify-blue"></span></p>
+        </div>
+      </div>
+      <div class="space-y-2 mb-6">
+        <button data-estado="Pendiente" class="estado-option w-full border border-gray-200 hover:border-amber-300 hover:bg-amber-50 rounded-xl p-4 flex items-center gap-3 transition-all text-left">
+          <span class="estado-dot" style="background:#f59e0b"></span>
+          <span class="font-medium">Pendiente</span>
+        </button>
+        <button data-estado="En Proceso" class="estado-option w-full border border-gray-200 hover:border-blue-300 hover:bg-blue-50 rounded-xl p-4 flex items-center gap-3 transition-all text-left">
+          <span class="estado-dot" style="background:#14B8A6"></span>
+          <span class="font-medium">En Proceso</span>
+        </button>
+        <button data-estado="Resuelto" class="estado-option w-full border border-gray-200 hover:border-green-300 hover:bg-green-50 rounded-xl p-4 flex items-center gap-3 transition-all text-left">
+          <span class="estado-dot" style="background:#10b981"></span>
+          <span class="font-medium">Resuelto</span>
+        </button>
+      </div>
+      <button id="close-modal" class="w-full border border-gray-300 hover:bg-gray-50 text-gray-700 py-3 rounded-xl font-medium transition-all">Cancelar</button>
+    </div>
+  </div>
+
+  <!-- QR Modal -->
+  <div id="qr-modal" class="fixed inset-0 z-50 hidden items-center justify-center modal-backdrop p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 animate-fade-in-up">
+      <div class="flex items-center gap-3 mb-5">
+        <div class="w-10 h-10 bg-comunify-blue/10 rounded-xl flex items-center justify-center">
+          <i data-lucide="qr-code" class="w-5 h-5 text-comunify-blue"></i>
+        </div>
+        <h3 class="text-lg font-bold text-gray-900">Generar QR de ubicación</h3>
+      </div>
+      <div class="grid grid-cols-3 gap-3 mb-5">
+        <div>
+          <label class="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">Torre</label>
+          <select id="qr-torre" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-comunify-blue focus:border-transparent">
+            <option value="A">Torre A</option>
+            <option value="B">Torre B</option>
+            <option value="C">Torre C</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">Piso</label>
+          <select id="qr-piso" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-comunify-blue focus:border-transparent">
+            <option value="1">Piso 1</option><option value="2">Piso 2</option><option value="3">Piso 3</option>
+            <option value="4">Piso 4</option><option value="5">Piso 5</option><option value="6">Piso 6</option>
+            <option value="7">Piso 7</option><option value="8">Piso 8</option><option value="9">Piso 9</option>
+            <option value="10">Piso 10</option><option value="11">Piso 11</option><option value="12">Piso 12</option><option value="13">Piso 13</option><option value="14">Piso 14</option><option value="15">Piso 15</option><option value="16">Piso 16</option><option value="17">Piso 17</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">Zona</label>
+          <select id="qr-zona" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-comunify-blue focus:border-transparent">
+            <option value="pasillo">Pasillo</option>
+            <option value="parqueadero">Parqueadero</option>
+            <option value="ascensor">Ascensor</option>
+            <option value="zonas_verdes">Zonas Verdes</option>
+            <option value="lobby">Lobby</option>
+          </select>
+        </div>
+      </div>
+      <div class="qr-canvas-container flex justify-center mb-5">
+        <canvas id="qr-canvas"></canvas>
+      </div>
+      <p id="qr-url" class="text-xs text-gray-400 text-center mb-5 break-all"></p>
+      <div class="flex gap-3">
+        <a id="qr-download" download="comunify-qr.png" class="flex-1 bg-comunify-blue hover:bg-comunify-blue-dark text-white py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 text-sm">
+          <i data-lucide="download" class="w-4 h-4"></i>
+          Descargar PNG
+        </a>
+        <button id="close-qr-modal" class="flex-1 border border-gray-300 hover:bg-gray-50 text-gray-700 py-3 rounded-xl font-medium transition-all text-sm">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { getAllIncidencias, updateIncidenciaEstado, getIncidenciaStats, ZONA_LABELS, ESTADO_COLORS } from './js/api.js'
+    import { getAdminSession, adminLogout } from './js/auth.js'
+    import { buildReportUrl } from './js/qr-reader.js'
+    import QRCode from 'qrcode'
+
+    if (!getAdminSession()) {
+      window.location.href = 'login.html'
+    }
+
+    lucide.createIcons()
+
+    const session = getAdminSession()
+    if (session?.user?.email) {
+      document.getElementById('admin-email').textContent = session.user.email
+    }
+
+    // Logout
+    document.getElementById('logout-btn').addEventListener('click', adminLogout)
+
+    let allIncidencias = []
+    let currentTicketForState = null
+
+    const ZONA_ICONS = {
+      pasillo: 'door-open', parqueadero: 'car', ascensor: 'move-vertical',
+      zonas_verdes: 'trees', lobby: 'building',
+    }
+
+    async function loadData() {
+      try {
+        const [incidencias, stats] = await Promise.all([
+          getAllIncidencias(getFilters()),
+          getIncidenciaStats(),
+        ])
+        allIncidencias = incidencias
+        renderTable(incidencias)
+        renderStats(stats)
+      } catch (err) {
+        renderError(err.message)
+      }
+    }
+
+    function getFilters() {
+      return {
+        torre: document.getElementById('filter-torre').value,
+        piso: document.getElementById('filter-piso').value,
+        estado: document.getElementById('filter-estado').value,
+      }
+    }
+
+    function renderStats(stats) {
+      document.getElementById('stat-total').textContent = stats.total
+      document.getElementById('stat-pendientes').textContent = stats.pendientes
+      document.getElementById('stat-proceso').textContent = stats.enProceso
+      document.getElementById('stat-resueltos').textContent = stats.resueltos
+    }
+
+    function renderTable(incidencias) {
+      const tbody = document.getElementById('incidencias-tbody')
+      if (incidencias.length === 0) {
+        tbody.innerHTML = `
+          <tr><td colspan="7" class="px-4 py-12 text-center text-gray-400">
+            <div class="flex flex-col items-center gap-2">
+              <i data-lucide="inbox" class="w-8 h-8 text-gray-300"></i>
+              <p class="text-sm">No hay incidencias que coincidan con los filtros</p>
+            </div>
+          </td></tr>`
+        lucide.createIcons()
+        return
+      }
+
+      tbody.innerHTML = incidencias.map(inc => {
+        const estado = ESTADO_COLORS[inc.estado] || ESTADO_COLORS['Pendiente']
+        const date = new Date(inc.created_at)
+        const formattedDate = date.toLocaleString('es-CO', {
+          day: '2-digit', month: '2-digit', year: 'numeric',
+          hour: '2-digit', minute: '2-digit'
+        })
+        const zonaLabel = ZONA_LABELS[inc.zona] || inc.zona
+        const zonaIcon = ZONA_ICONS[inc.zona] || 'map-pin'
+
+        return `
+          <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+            <td class="px-4 py-3 font-mono text-xs font-semibold text-comunify-blue">${inc.ticket_number}</td>
+            <td class="px-4 py-3"><span class="font-semibold">${inc.torre}</span></td>
+            <td class="px-4 py-3">${inc.piso}</td>
+            <td class="px-4 py-3">
+              <span class="inline-flex items-center gap-1.5 text-xs">
+                <i data-lucide="${zonaIcon}" class="w-3.5 h-3.5 text-gray-400"></i>
+                ${zonaLabel}
+              </span>
+            </td>
+            <td class="px-4 py-3">
+              <span class="estado-badge" style="background:${estado.bg};color:${estado.text}">
+                <span class="estado-dot" style="background:${estado.dot}"></span>
+                ${inc.estado}
+              </span>
+            </td>
+            <td class="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">${formattedDate}</td>
+            <td class="px-4 py-3 text-right">
+              <div class="flex items-center justify-end gap-1">
+                <button onclick="viewDetail('${inc.ticket_number}')" class="p-2 text-gray-400 hover:text-comunify-blue hover:bg-blue-50 rounded-lg transition-all" title="Ver detalle">
+                  <i data-lucide="eye" class="w-4 h-4"></i>
+                </button>
+                <button onclick="openStateModal('${inc.ticket_number}')" class="p-2 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-all" title="Cambiar estado">
+                  <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </td>
+          </tr>`
+      }).join('')
+
+      lucide.createIcons()
+    }
+
+    function renderError(msg) {
+      document.getElementById('incidencias-tbody').innerHTML = `
+        <tr><td colspan="7" class="px-4 py-12 text-center text-red-500">
+          <div class="flex flex-col items-center gap-2">
+            <i data-lucide="alert-triangle" class="w-8 h-8"></i>
+            <p class="text-sm">${msg}</p>
+          </div>
+        </td></tr>`
+      lucide.createIcons()
+    }
+
+    // Filters
+    ['filter-torre', 'filter-piso', 'filter-estado'].forEach(id => {
+      document.getElementById(id).addEventListener('change', loadData)
+    })
+    document.getElementById('clear-filters').addEventListener('click', () => {
+      document.getElementById('filter-torre').value = 'all'
+      document.getElementById('filter-piso').value = 'all'
+      document.getElementById('filter-estado').value = 'all'
+      loadData()
+    })
+
+    // Detail view (simple alert-like redirect to consultar)
+    window.viewDetail = (ticket) => {
+      window.open(`consultar.html`, '_blank')
+      // Pre-fill could be done via URL param but consultar uses its own search
+    }
+
+    // State modal
+    window.openStateModal = (ticket) => {
+      currentTicketForState = ticket
+      document.getElementById('modal-ticket').textContent = ticket
+      const modal = document.getElementById('state-modal')
+      modal.classList.remove('hidden')
+      modal.classList.add('flex')
+    }
+
+    document.getElementById('close-modal').addEventListener('click', () => {
+      const modal = document.getElementById('state-modal')
+      modal.classList.add('hidden')
+      modal.classList.remove('flex')
+    })
+
+    document.querySelectorAll('.estado-option').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const nuevoEstado = btn.dataset.estado
+        if (!currentTicketForState) return
+
+        try {
+          await updateIncidenciaEstado(currentTicketForState, nuevoEstado)
+          document.getElementById('state-modal').classList.add('hidden')
+          document.getElementById('state-modal').classList.remove('flex')
+          loadData()
+        } catch (err) {
+          alert('Error al cambiar estado: ' + err.message)
+        }
+      })
+    })
+
+    // QR Modal
+    const qrModal = document.getElementById('qr-modal')
+    function openQrModal() {
+      qrModal.classList.remove('hidden')
+      qrModal.classList.add('flex')
+      generateQR()
+    }
+    document.querySelector('a[href="qr-generator.html"]').addEventListener('click', (e) => {
+      e.preventDefault()
+      openQrModal()
+    })
+
+    document.getElementById('close-qr-modal').addEventListener('click', () => {
+      qrModal.classList.add('hidden')
+      qrModal.classList.remove('flex')
+    })
+
+    async function generateQR() {
+      const torre = document.getElementById('qr-torre').value
+      const piso = document.getElementById('qr-piso').value
+      const zona = document.getElementById('qr-zona').value
+      const url = buildReportUrl(torre, piso, zona)
+      const canvas = document.getElementById('qr-canvas')
+      await QRCode.toCanvas(canvas, url, {
+        width: 256,
+        margin: 2,
+        color: { dark: '#0D9488', light: '#ffffff' },
+      })
+      document.getElementById('qr-url').textContent = url
+      canvas.toBlob((blob) => {
+        const dl = document.getElementById('qr-download')
+        dl.href = URL.createObjectURL(blob)
+      }, 'image/png')
+    }
+
+    ['qr-torre', 'qr-piso', 'qr-zona'].forEach(id => {
+      document.getElementById(id).addEventListener('change', generateQR)
+    })
+
+    // Close modals on backdrop click
+    document.getElementById('state-modal').addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) {
+        e.currentTarget.classList.add('hidden')
+        e.currentTarget.classList.remove('flex')
+      }
+    })
+    qrModal.addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) {
+        e.currentTarget.classList.add('hidden')
+        e.currentTarget.classList.remove('flex')
+      }
+    })
+
+    loadData()
+  </script>
+</body>
+</html>

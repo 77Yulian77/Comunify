@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/assets/logo-icon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Comunify - Consultar Ticket</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: { colors: { comunify: { blue: '#0D9488', 'blue-light': '#14B8A6', 'blue-dark': '#0F766E' } } } }
+    }
+  </script>
+  <link rel="stylesheet" href="/css/custom.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+<body class="bg-gray-50 text-gray-900 min-h-screen flex flex-col">
+
+  <nav class="bg-white border-b border-gray-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
+        <a href="index.html" class="flex items-center gap-3">
+          <img src="/assets/logo-comunify.png" alt="Comunify" class="h-16">
+        </a>
+        <a href="reportar.html" class="text-gray-600 hover:text-comunify-blue text-sm font-medium transition-colors">Reportar incidencia</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="flex-1 py-8 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-2xl mx-auto">
+
+      <div class="text-center mb-8">
+        <div class="w-14 h-14 bg-comunify-blue/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <i data-lucide="search" class="w-7 h-7 text-comunify-blue"></i>
+        </div>
+        <h1 class="text-2xl font-bold text-gray-900">Consultar mi ticket</h1>
+        <p class="text-gray-500 text-sm mt-1">Ingresa tu número de ticket para ver el estado de tu incidencia</p>
+      </div>
+
+      <!-- Search form -->
+      <div class="bg-white rounded-2xl card-shadow p-6 mb-6">
+        <form id="search-form" class="flex flex-col sm:flex-row gap-3" novalidate>
+          <input
+            type="text"
+            id="ticket-input"
+            placeholder="Ej: TCK-2026-001"
+            class="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-comunify-blue focus:border-transparent transition-all text-sm font-medium tracking-wider"
+          >
+          <button type="submit" id="search-btn" class="bg-comunify-blue hover:bg-comunify-blue-dark text-white px-8 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 whitespace-nowrap">
+            <i data-lucide="search" class="w-5 h-5"></i>
+            Consultar
+          </button>
+        </form>
+        <span id="search-error" class="text-xs text-red-500 hidden mt-2 block"></span>
+      </div>
+
+      <!-- Results -->
+      <div id="result-container"></div>
+
+      <!-- Not found -->
+      <div id="not-found" class="hidden bg-white rounded-2xl card-shadow p-8 text-center animate-fade-in">
+        <div class="w-14 h-14 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <i data-lucide="search-x" class="w-7 h-7 text-amber-600"></i>
+        </div>
+        <h2 class="text-xl font-bold text-gray-900 mb-2">Ticket no encontrado</h2>
+        <p class="text-gray-600 text-sm">Verifica que el número de ticket sea correcto e inténtalo de nuevo.</p>
+      </div>
+
+      <!-- Error -->
+      <div id="error-container" class="hidden bg-red-50 border border-red-200 rounded-2xl p-6 text-center">
+        <div class="flex items-center gap-3 justify-center">
+          <i data-lucide="alert-triangle" class="w-5 h-5 text-red-500"></i>
+          <p id="error-msg" class="text-sm text-red-700"></p>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="bg-gray-900 text-gray-500 py-6 px-4 text-center text-sm">
+    Comunify © 2026 - Conjunto Residencial Monteclaro P.H.
+  </footer>
+
+  <script type="module">
+    import { getIncidenciaByTicket, ZONA_LABELS, ESTADO_COLORS } from './js/api.js'
+    import { validateTicketNumber } from './js/validators.js'
+
+    lucide.createIcons()
+
+    const ZONA_ICONS = {
+      pasillo: 'door-open',
+      parqueadero: 'car',
+      ascensor: 'move-vertical',
+      zonas_verdes: 'trees',
+      lobby: 'building',
+    }
+
+    document.getElementById('search-form').addEventListener('submit', async (e) => {
+      e.preventDefault()
+      const input = document.getElementById('ticket-input')
+      const ticket = input.value.trim().toUpperCase()
+
+      const err = validateTicketNumber(ticket)
+      if (err) {
+        const errEl = document.getElementById('search-error')
+        errEl.textContent = err
+        errEl.classList.remove('hidden')
+        return
+      }
+      document.getElementById('search-error').classList.add('hidden')
+
+      const btn = document.getElementById('search-btn')
+      btn.disabled = true
+      btn.innerHTML = '<div class="spinner"></div>'
+
+      document.getElementById('not-found').classList.add('hidden')
+      document.getElementById('error-container').classList.add('hidden')
+      document.getElementById('result-container').innerHTML = ''
+
+      try {
+        const data = await getIncidenciaByTicket(ticket)
+        if (!data) {
+          document.getElementById('not-found').classList.remove('hidden')
+          lucide.createIcons()
+        } else {
+          renderResult(data)
+        }
+      } catch (err) {
+        const errEl = document.getElementById('error-container')
+        document.getElementById('error-msg').textContent = err.message || 'Error al consultar el ticket'
+        errEl.classList.remove('hidden')
+      } finally {
+        btn.disabled = false
+        btn.innerHTML = '<i data-lucide="search" class="w-5 h-5"></i> Consultar'
+        lucide.createIcons()
+      }
+    })
+
+    function renderResult(data) {
+      const estado = ESTADO_COLORS[data.estado] || ESTADO_COLORS['Pendiente']
+      const date = new Date(data.created_at)
+      const formattedDate = date.toLocaleString('es-CO', {
+        day: '2-digit', month: 'long', year: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+      })
+      const zonaLabel = ZONA_LABELS[data.zona] || data.zona
+      const zonaIcon = ZONA_ICONS[data.zona] || 'map-pin'
+
+      const html = `
+        <div class="bg-white rounded-2xl card-shadow overflow-hidden animate-fade-in-up">
+          <div class="bg-gray-50 border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+            <div>
+              <p class="text-xs text-gray-400 uppercase tracking-wide">Ticket</p>
+              <p class="text-xl font-bold text-comunify-blue tracking-wider">${data.ticket_number}</p>
+            </div>
+            <div class="estado-badge" style="background:${estado.bg};color:${estado.text}">
+              <span class="estado-dot" style="background:${estado.dot}"></span>
+              ${data.estado}
+            </div>
+          </div>
+
+          <div class="p-6 space-y-5">
+            <div>
+              <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">Fecha de reporte</p>
+              <p class="text-sm text-gray-700 font-medium">${formattedDate}</p>
+            </div>
+
+            <div class="grid grid-cols-3 gap-3">
+              <div class="bg-gray-50 rounded-xl p-3 text-center">
+                <p class="text-xs text-gray-400 mb-1">Torre</p>
+                <p class="text-lg font-bold text-gray-900">${data.torre}</p>
+              </div>
+              <div class="bg-gray-50 rounded-xl p-3 text-center">
+                <p class="text-xs text-gray-400 mb-1">Piso</p>
+                <p class="text-lg font-bold text-gray-900">${data.piso}</p>
+              </div>
+              <div class="bg-gray-50 rounded-xl p-3 text-center">
+                <p class="text-xs text-gray-400 mb-1">Zona</p>
+                <p class="text-sm font-bold text-gray-900 flex items-center justify-center gap-1.5">
+                  <i data-lucide="${zonaIcon}" class="w-4 h-4"></i>
+                  ${zonaLabel}
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">Descripción</p>
+              <p class="text-sm text-gray-700 leading-relaxed bg-gray-50 rounded-xl p-4">${data.descripcion}</p>
+            </div>
+
+            ${data.foto_url ? `
+              <div>
+                <p class="text-xs text-gray-400 uppercase tracking-wide mb-2">Foto de evidencia</p>
+                <img src="${data.foto_url}" alt="Evidencia" class="w-full rounded-xl border border-gray-200 max-h-80 object-contain bg-gray-50" onerror="this.style.display='none'">
+              </div>
+            ` : ''}
+
+            <div class="flex gap-3 pt-2">
+              <a href="reportar.html" class="flex-1 border border-gray-300 hover:bg-gray-50 text-gray-700 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 text-sm">
+                <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                Reportar otra
+              </a>
+              <a href="index.html" class="flex-1 border border-gray-300 hover:bg-gray-50 text-gray-700 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 text-sm">
+                <i data-lucide="home" class="w-4 h-4"></i>
+                Inicio
+              </a>
+            </div>
+          </div>
+        </div>
+      `
+
+      document.getElementById('result-container').innerHTML = html
+      lucide.createIcons()
+    }
+  </script>
+</body>
+</html>

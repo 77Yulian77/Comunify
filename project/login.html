@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/assets/logo-icon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Comunify - Acceso Administrador</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: { colors: { comunify: { blue: '#0D9488', 'blue-light': '#14B8A6', 'blue-dark': '#0F766E' } } } }
+    }
+  </script>
+  <link rel="stylesheet" href="/css/custom.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+<body class="bg-gray-50 text-gray-900 min-h-screen flex flex-col">
+
+  <nav class="bg-white border-b border-gray-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
+        <a href="index.html" class="flex items-center gap-3">
+          <img src="/assets/logo-comunify.png" alt="Comunify" class="h-16">
+        </a>
+        <a href="index.html" class="text-gray-600 hover:text-comunify-blue text-sm font-medium transition-colors">Volver al inicio</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="flex-1 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full">
+
+      <div class="text-center mb-8">
+        <div class="w-14 h-14 bg-comunify-blue/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <i data-lucide="shield" class="w-7 h-7 text-comunify-blue"></i>
+        </div>
+        <h1 class="text-2xl font-bold text-gray-900">Acceso administrador</h1>
+        <p class="text-gray-500 text-sm mt-1">Ingresa tus credenciales para gestionar incidencias</p>
+      </div>
+
+      <div class="bg-white rounded-2xl card-shadow p-6 sm:p-8">
+        <form id="login-form" class="space-y-5" novalidate>
+          <div>
+            <label for="email" class="block text-sm font-semibold text-gray-700 mb-2">Correo electrónico</label>
+            <input
+              type="email"
+              id="email"
+              required
+              placeholder="administrador@comunify.app"
+              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-comunify-blue focus:border-transparent transition-all text-sm"
+            >
+            <span id="email-error" class="text-xs text-red-500 hidden mt-1 block"></span>
+          </div>
+
+          <div>
+            <label for="password" class="block text-sm font-semibold text-gray-700 mb-2">Contraseña</label>
+            <div class="relative">
+              <input
+                type="password"
+                id="password"
+                required
+                placeholder="••••••••"
+                class="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-comunify-blue focus:border-transparent transition-all text-sm"
+              >
+              <button type="button" id="toggle-password" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                <i data-lucide="eye" class="w-5 h-5"></i>
+              </button>
+            </div>
+            <span id="password-error" class="text-xs text-red-500 hidden mt-1 block"></span>
+          </div>
+
+          <div id="login-error" class="hidden bg-red-50 border border-red-200 rounded-xl p-4">
+            <div class="flex items-center gap-3">
+              <i data-lucide="alert-triangle" class="w-5 h-5 text-red-500 flex-shrink-0"></i>
+              <p id="login-error-msg" class="text-sm text-red-700"></p>
+            </div>
+          </div>
+
+          <button type="submit" id="login-btn" class="w-full bg-comunify-blue hover:bg-comunify-blue-dark text-white py-4 rounded-xl font-semibold text-lg transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2">
+            <i data-lucide="log-in" class="w-5 h-5"></i>
+            Ingresar
+          </button>
+        </form>
+      </div>
+
+      <p class="text-center text-sm text-gray-400 mt-6">
+        ¿Eres residente? <a href="consultar.html" class="text-comunify-blue font-medium hover:underline">Consulta tu ticket aquí</a>
+      </p>
+    </div>
+  </main>
+
+  <footer class="bg-gray-900 text-gray-500 py-6 px-4 text-center text-sm">
+    Comunify © 2026 - Conjunto Residencial Monteclaro P.H.
+  </footer>
+
+  <script type="module">
+    import { adminLogin } from './js/auth.js'
+    import { validateLogin } from './js/validators.js'
+    import { getAdminSession } from './js/auth.js'
+
+    lucide.createIcons()
+
+    // Redirect if already logged in
+    if (getAdminSession()) {
+      window.location.href = 'dashboard.html'
+    }
+
+    // Toggle password
+    const toggleBtn = document.getElementById('toggle-password')
+    const passwordInput = document.getElementById('password')
+    let passwordVisible = false
+    toggleBtn.addEventListener('click', () => {
+      passwordVisible = !passwordVisible
+      passwordInput.type = passwordVisible ? 'text' : 'password'
+      toggleBtn.innerHTML = passwordVisible
+        ? '<i data-lucide="eye-off" class="w-5 h-5"></i>'
+        : '<i data-lucide="eye" class="w-5 h-5"></i>'
+      lucide.createIcons()
+    })
+
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault()
+
+      const email = document.getElementById('email').value.trim()
+      const password = document.getElementById('password').value
+
+      document.getElementById('email-error').classList.add('hidden')
+      document.getElementById('password-error').classList.add('hidden')
+      document.getElementById('login-error').classList.add('hidden')
+
+      const errors = validateLogin(email, password)
+      if (errors.email) {
+        const el = document.getElementById('email-error')
+        el.textContent = errors.email
+        el.classList.remove('hidden')
+      }
+      if (errors.password) {
+        const el = document.getElementById('password-error')
+        el.textContent = errors.password
+        el.classList.remove('hidden')
+      }
+      if (errors.email || errors.password) return
+
+      const btn = document.getElementById('login-btn')
+      btn.disabled = true
+      btn.innerHTML = '<div class="spinner"></div>'
+
+      try {
+        const session = await adminLogin(email, password)
+        localStorage.setItem('comunify_admin_session', JSON.stringify({
+          access_token: session.access_token,
+          refresh_token: session.refresh_token,
+          expires_at: session.expires_at ? session.expires_at * 1000 : Date.now() + 3600000,
+          user: { email: session.user?.email },
+        }))
+        window.location.href = 'dashboard.html'
+      } catch (err) {
+        const errEl = document.getElementById('login-error')
+        const msg = document.getElementById('login-error-msg')
+        if (err.message.includes('Invalid login')) {
+          msg.textContent = 'Correo o contraseña incorrectos'
+        } else {
+          msg.textContent = err.message || 'Error al iniciar sesión'
+        }
+        errEl.classList.remove('hidden')
+        btn.disabled = false
+        btn.innerHTML = '<i data-lucide="log-in" class="w-5 h-5"></i> Ingresar'
+        lucide.createIcons()
+      }
+    })
+  </script>
+</body>
+</html>

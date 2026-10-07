@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/assets/logo-icon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Comunify - Gestión de Incidencias PH</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            comunify: {
+              blue: '#0D9488',
+              'blue-light': '#14B8A6',
+              'blue-dark': '#0F766E',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="/css/custom.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <meta property="og:image" content="https://bolt.new/static/og_default.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="https://bolt.new/static/og_default.png">
+</head>
+<body class="bg-gray-50 text-gray-900 min-h-screen flex flex-col">
+
+  <!-- Navbar -->
+  <nav class="bg-white border-b border-gray-200 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
+        <a href="index.html" class="flex items-center gap-3">
+          <img src="/assets/logo-comunify.png" alt="Comunify" class="h-16">
+        </a>
+        <div class="hidden md:flex items-center gap-6">
+          <a href="#caracteristicas" class="text-gray-600 hover:text-comunify-blue text-sm font-medium transition-colors">Características</a>
+          <a href="#como-funciona" class="text-gray-600 hover:text-comunify-blue text-sm font-medium transition-colors">Cómo funciona</a>
+          <a href="consultar.html" class="text-gray-600 hover:text-comunify-blue text-sm font-medium transition-colors">Consultar ticket</a>
+          <a href="login.html" class="text-gray-600 hover:text-comunify-blue text-sm font-medium transition-colors">Administrador</a>
+        </div>
+        <a href="reportar.html" class="bg-comunify-blue hover:bg-comunify-blue-dark text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors">
+          Reportar incidencia
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero-gradient text-white py-20 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
+      <div class="animate-fade-in-up">
+        <span class="inline-block bg-white/15 backdrop-blur-sm rounded-full px-4 py-1.5 text-sm font-medium mb-6">
+          Conjunto Residencial Monteclaro P.H.
+        </span>
+        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight mb-6">
+          Gestión de incidencias<br>simple y transparente
+        </h1>
+        <p class="text-lg text-blue-100 mb-8 max-w-xl">
+          Reporta y consulta incidencias en tu conjunto residencial en segundos. Tres torres, un solo sistema.
+        </p>
+        <div class="flex flex-col sm:flex-row gap-4">
+          <a href="reportar.html" class="bg-white text-comunify-blue hover:bg-blue-50 px-8 py-4 rounded-xl font-semibold text-lg transition-all shadow-lg hover:shadow-xl inline-flex items-center justify-center gap-2">
+            <i data-lucide="alert-circle" class="w-5 h-5"></i>
+            Reportar incidencia
+          </a>
+          <a href="consultar.html" class="border-2 border-white/40 hover:bg-white/10 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all inline-flex items-center justify-center gap-2">
+            <i data-lucide="search" class="w-5 h-5"></i>
+            Consultar mi ticket
+          </a>
+        </div>
+      </div>
+      <div class="hidden lg:block animate-fade-in-up" style="animation-delay: 0.2s">
+        <div class="bg-white/10 backdrop-blur-md rounded-3xl p-8 border border-white/20">
+          <div class="grid grid-cols-3 gap-4 mb-6">
+            <div class="bg-white/10 rounded-xl p-4 text-center">
+              <div class="text-3xl font-bold">3</div>
+              <div class="text-sm text-blue-100">Torres</div>
+            </div>
+            <div class="bg-white/10 rounded-xl p-4 text-center">
+              <div class="text-3xl font-bold">17</div>
+              <div class="text-sm text-blue-100">Pisos</div>
+            </div>
+            <div class="bg-white/10 rounded-xl p-4 text-center">
+              <div class="text-3xl font-bold">5</div>
+              <div class="text-sm text-blue-100">Zonas</div>
+            </div>
+          </div>
+          <div class="space-y-3">
+            <div class="flex items-center gap-3 bg-white/10 rounded-lg p-3">
+              <div class="w-2 h-2 bg-amber-400 rounded-full"></div>
+              <span class="text-sm">Pendiente</span>
+            </div>
+            <div class="flex items-center gap-3 bg-white/10 rounded-lg p-3">
+              <div class="w-2 h-2 bg-blue-400 rounded-full"></div>
+              <span class="text-sm">En Proceso</span>
+            </div>
+            <div class="flex items-center gap-3 bg-white/10 rounded-lg p-3">
+              <div class="w-2 h-2 bg-green-400 rounded-full"></div>
+              <span class="text-sm">Resuelto</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Características -->
+  <section id="caracteristicas" class="py-20 px-4 sm:px-6 lg:px-8 bg-white">
+    <div class="max-w-7xl mx-auto">
+      <div class="text-center mb-14">
+        <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">Todo lo que tu conjunto necesita</h2>
+        <p class="text-gray-600 max-w-2xl mx-auto">Un sistema diseñado para la gestión eficiente de incidencias en propiedad horizontal.</p>
+      </div>
+      <div class="grid md:grid-cols-3 gap-8">
+        <div class="card-shadow card-shadow-hover bg-gray-50 rounded-2xl p-8">
+          <div class="w-12 h-12 bg-comunify-blue/10 rounded-xl flex items-center justify-center mb-5">
+            <i data-lucide="file-text" class="w-6 h-6 text-comunify-blue"></i>
+          </div>
+          <h3 class="text-xl font-bold mb-3">Reporte rápido</h3>
+          <p class="text-gray-600">Reporta cualquier incidencia en menos de 3 minutos con descripción, ubicación y foto de evidencia.</p>
+        </div>
+        <div class="card-shadow card-shadow-hover bg-gray-50 rounded-2xl p-8">
+          <div class="w-12 h-12 bg-comunify-blue/10 rounded-xl flex items-center justify-center mb-5">
+            <i data-lucide="qr-code" class="w-6 h-6 text-comunify-blue"></i>
+          </div>
+          <h3 class="text-xl font-bold mb-3">Códigos QR por zona</h3>
+          <p class="text-gray-600">Escanea el QR de tu ubicación y el sistema precarga automáticamente torre, piso y zona.</p>
+        </div>
+        <div class="card-shadow card-shadow-hover bg-gray-50 rounded-2xl p-8">
+          <div class="w-12 h-12 bg-comunify-blue/10 rounded-xl flex items-center justify-center mb-5">
+            <i data-lucide="search-check" class="w-6 h-6 text-comunify-blue"></i>
+          </div>
+          <h3 class="text-xl font-bold mb-3">Consulta pública</h3>
+          <p class="text-gray-600">Consulta el estado de tu incidencia con el número de ticket, sin necesidad de iniciar sesión.</p>
+        </div>
+        <div class="card-shadow card-shadow-hover bg-gray-50 rounded-2xl p-8">
+          <div class="w-12 h-12 bg-comunify-blue/10 rounded-xl flex items-center justify-center mb-5">
+            <i data-lucide="layout-dashboard" class="w-6 h-6 text-comunify-blue"></i>
+          </div>
+          <h3 class="text-xl font-bold mb-3">Panel administrativo</h3>
+          <p class="text-gray-600">Los administradores gestionan todas las incidencias con filtros, estados y estadísticas en tiempo real.</p>
+        </div>
+        <div class="card-shadow card-shadow-hover bg-gray-50 rounded-2xl p-8">
+          <div class="w-12 h-12 bg-comunify-blue/10 rounded-xl flex items-center justify-center mb-5">
+            <i data-lucide="shield-check" class="w-6 h-6 text-comunify-blue"></i>
+          </div>
+          <h3 class="text-xl font-bold mb-3">Seguridad ISO 27001</h3>
+          <p class="text-gray-600">Conexión HTTPS, sanitización de datos, validación de archivos y protección de información privada.</p>
+        </div>
+        <div class="card-shadow card-shadow-hover bg-gray-50 rounded-2xl p-8">
+          <div class="w-12 h-12 bg-comunify-blue/10 rounded-xl flex items-center justify-center mb-5">
+            <i data-lucide="smartphone" class="w-6 h-6 text-comunify-blue"></i>
+          </div>
+          <h3 class="text-xl font-bold mb-3">Mobile-first</h3>
+          <p class="text-gray-600">Diseño responsive que funciona perfectamente en móvil, tablet y escritorio.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Cómo funciona -->
+  <section id="como-funciona" class="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50">
+    <div class="max-w-5xl mx-auto">
+      <div class="text-center mb-14">
+        <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">Cómo funciona</h2>
+        <p class="text-gray-600">Tres pasos simples para reportar y dar seguimiento a incidencias.</p>
+      </div>
+      <div class="grid md:grid-cols-3 gap-8">
+        <div class="text-center relative">
+          <div class="w-16 h-16 bg-comunify-blue text-white rounded-2xl flex items-center justify-center text-2xl font-bold mx-auto mb-4">1</div>
+          <div class="absolute top-8 left-1/2 w-full h-0.5 bg-gray-200 hidden md:block" style="transform: translateX(50%)"></div>
+          <h3 class="font-bold text-lg mb-2">Reporta</h3>
+          <p class="text-gray-600 text-sm">Escanea el QR de tu zona o ingresa al formulario y describe la incidencia.</p>
+        </div>
+        <div class="text-center relative">
+          <div class="w-16 h-16 bg-comunify-blue text-white rounded-2xl flex items-center justify-center text-2xl font-bold mx-auto mb-4">2</div>
+          <h3 class="font-bold text-lg mb-2">Recibe tu ticket</h3>
+          <p class="text-gray-600 text-sm">Obtén un número de ticket único (TCK-2026-XXX) para hacer seguimiento.</p>
+        </div>
+        <div class="text-center">
+          <div class="w-16 h-16 bg-comunify-blue text-white rounded-2xl flex items-center justify-center text-2xl font-bold mx-auto mb-4">3</div>
+          <h3 class="font-bold text-lg mb-2">Consulta el estado</h3>
+          <p class="text-gray-600 text-sm">Revisa el estado de tu incidencia cuando quieras, sin necesidad de login.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="py-20 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-4xl mx-auto bg-comunify-blue rounded-3xl p-12 text-center text-white">
+      <h2 class="text-3xl font-bold mb-4">¿Listo para reportar una incidencia?</h2>
+      <p class="text-blue-100 mb-8">Es rápido, fácil y no requiere registro.</p>
+      <a href="reportar.html" class="inline-flex items-center gap-2 bg-white text-comunify-blue hover:bg-blue-50 px-8 py-4 rounded-xl font-semibold text-lg transition-all shadow-lg">
+        <i data-lucide="alert-circle" class="w-5 h-5"></i>
+        Reportar ahora
+      </a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-gray-900 text-gray-400 py-12 px-4 sm:px-6 lg:px-8 mt-auto">
+    <div class="max-w-7xl mx-auto">
+      <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+        <div class="flex items-center gap-3">
+          <img src="/assets/logo-comunify.png" alt="Comunify" class="h-16 brightness-0 invert opacity-90">
+        </div>
+        <div class="flex gap-6 text-sm">
+          <a href="index.html" class="hover:text-white transition-colors">Inicio</a>
+          <a href="reportar.html" class="hover:text-white transition-colors">Reportar</a>
+          <a href="consultar.html" class="hover:text-white transition-colors">Consultar</a>
+          <a href="login.html" class="hover:text-white transition-colors">Admin</a>
+        </div>
+        <p class="text-sm text-gray-500">Conjunto Residencial Monteclaro P.H. - Suba, Bogotá</p>
+      </div>
+      <div class="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-500">
+        Comunify © 2026 - Plataforma de gestión de incidencias en propiedad horizontal
+      </div>
+    </div>
+  </footer>
+
+  <script>lucide.createIcons()</script>
+</body>
+</html>

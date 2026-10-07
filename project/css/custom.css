@@ -1,0 +1,137 @@
+:root {
+  --comunify-blue: #0D9488;
+  --comunify-blue-light: #14B8A6;
+  --comunify-blue-dark: #0F766E;
+  --comunify-gray: #6b7280;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in-up { animation: fadeInUp 0.6s ease-out forwards; }
+.animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+.animate-slide-down { animation: slideDown 0.3s ease-out forwards; }
+
+.hero-gradient {
+  background: linear-gradient(135deg, #0F766E 0%, #0D9488 50%, #2563eb 100%);
+}
+
+.card-shadow {
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+}
+
+.card-shadow-hover:hover {
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1), 0 4px 10px rgba(0,0,0,0.06);
+  transform: translateY(-2px);
+}
+
+.card-shadow-hover {
+  transition: box-shadow 0.3s, transform 0.3s;
+}
+
+/* Estado badge styles */
+.estado-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.estado-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Modal backdrop */
+.modal-backdrop {
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+}
+
+/* QR canvas container */
+.qr-canvas-container canvas {
+  border-radius: 12px;
+}
+
+/* Table responsive */
+.table-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: #f1f5f9; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+/* File input styling */
+.file-input-wrapper {
+  position: relative;
+  border: 2px dashed #cbd5e1;
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+  transition: border-color 0.3s, background-color 0.3s;
+  cursor: pointer;
+}
+
+.file-input-wrapper:hover {
+  border-color: #14B8A6;
+  background-color: #eff6ff;
+}
+
+.file-input-wrapper.has-file {
+  border-color: #10b981;
+  border-style: solid;
+}
+
+/* Loading spinner */
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 3px solid #e5e7eb;
+  border-top-color: #0D9488;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Transition for dropdown menus */
+.dropdown-menu {
+  transform-origin: top right;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.dropdown-menu.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.95);
+}
