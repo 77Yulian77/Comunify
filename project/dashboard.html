@@ -8,7 +8,8 @@
     window.location.href = 'login.html'
   }
 
-  lucide.createIcons()
+  // Inicializar iconos (CORREGIDO: usar window.lucide)
+  if (window.lucide) window.lucide.createIcons()
 
   const session = getAdminSession()
   if (session?.user?.email) {
@@ -76,7 +77,7 @@
               <p class="text-sm">No hay incidencias que coincidan con los filtros</p>
             </div>
           </td></tr>`
-      lucide.createIcons()
+      if (window.lucide) window.lucide.createIcons()
       return
     }
 
@@ -121,7 +122,7 @@
           </tr>`
     }).join('')
 
-    lucide.createIcons()
+    if (window.lucide) window.lucide.createIcons()
   }
 
   function renderError(msg) {
@@ -134,10 +135,10 @@
             <p class="text-sm">${msg}</p>
           </div>
         </td></tr>`
-    lucide.createIcons()
+    if (window.lucide) window.lucide.createIcons()
   }
 
-  // Filtros (con protección null)
+  // Filtros
   const filterTorre = document.getElementById('filter-torre')
   const filterPiso = document.getElementById('filter-piso')
   const filterEstado = document.getElementById('filter-estado')
@@ -287,6 +288,6 @@
     })
   }
 
-  // ¡INICIAR CARGA DE DATOS!
+  // Cargar datos
   loadData()
 </script>
