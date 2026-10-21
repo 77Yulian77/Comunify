@@ -105,6 +105,19 @@ body {
   background-color: #eff6ff;
 }
 
+.file-input-wrapper.no-click {
+  cursor: default;
+}
+
+.file-input-wrapper.no-click:hover {
+  border-color: #cbd5e1;
+  background-color: transparent;
+}
+
+.file-input-wrapper.no-click.has-file:hover {
+  border-color: #10b981;
+}
+
 .file-input-wrapper.has-file {
   border-color: #10b981;
   border-style: solid;

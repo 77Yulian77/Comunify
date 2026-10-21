@@ -138,6 +138,13 @@
       }
     })
 
+    // Si llega con ?ticket=TCK-2026-001 (por ejemplo desde el panel del administrador), consulta automáticamente
+    const ticketParam = new URLSearchParams(window.location.search).get('ticket')
+    if (ticketParam) {
+      document.getElementById('ticket-input').value = ticketParam.trim().toUpperCase()
+      document.getElementById('search-form').dispatchEvent(new Event('submit', { cancelable: true }))
+    }
+
     function renderResult(data) {
       const estado = ESTADO_COLORS[data.estado] || ESTADO_COLORS['Pendiente']
       const date = new Date(data.created_at)
@@ -147,6 +154,8 @@
       })
       const zonaLabel = ZONA_LABELS[data.zona] || data.zona
       const zonaIcon = ZONA_ICONS[data.zona] || 'map-pin'
+      // Solo se acepta una URL https válida para la foto (evita inyectar HTML en el atributo)
+      const fotoUrl = /^https:\/\/[^\s"'<>]+$/.test(data.foto_url || '') ? data.foto_url : null
 
       const html = `
         <div class="bg-white rounded-2xl card-shadow overflow-hidden animate-fade-in-up">
@@ -190,12 +199,22 @@
               <p class="text-sm text-gray-700 leading-relaxed bg-gray-50 rounded-xl p-4">${data.descripcion}</p>
             </div>
 
-            ${data.foto_url ? `
+            ${fotoUrl ? `
               <div>
                 <p class="text-xs text-gray-400 uppercase tracking-wide mb-2">Foto de evidencia</p>
-                <img src="${data.foto_url}" alt="Evidencia" class="w-full rounded-xl border border-gray-200 max-h-80 object-contain bg-gray-50" onerror="this.style.display='none'">
+                <a href="${fotoUrl}" target="_blank" rel="noopener noreferrer" title="Ver foto completa">
+                  <img src="${fotoUrl}" alt="Foto de evidencia del reporte" loading="lazy" class="w-full rounded-xl border border-gray-200 max-h-80 object-contain bg-gray-50"
+                    onerror="this.parentElement.style.display='none'; this.parentElement.nextElementSibling.classList.remove('hidden')">
+                </a>
+                <p class="text-xs text-gray-400 mt-2">Toca la foto para verla en tamaño completo.</p>
+                <p class="hidden text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-xl p-3">No se pudo cargar la foto de este reporte.</p>
               </div>
-            ` : ''}
+            ` : `
+              <div>
+                <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">Foto de evidencia</p>
+                <p class="text-sm text-gray-500 bg-gray-50 rounded-xl p-4">Este reporte no tiene foto adjunta.</p>
+              </div>
+            `}
 
             <div class="flex gap-3 pt-2">
               <a href="reportar.html" class="flex-1 border border-gray-300 hover:bg-gray-50 text-gray-700 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 text-sm">
