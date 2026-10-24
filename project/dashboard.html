@@ -142,6 +142,14 @@
     </div>
 
     <div class="bg-white rounded-xl card-shadow overflow-hidden">
+      <div id="bulk-bar" class="hidden px-4 py-3 border-b border-gray-100 bg-gray-50 items-center justify-between gap-3">
+        <p class="text-sm text-gray-600"><span id="bulk-count" class="font-semibold">0</span> ticket(s) resuelto(s) en la lista</p>
+        <button id="bulk-delete-btn"
+          class="border border-red-200 hover:bg-red-50 text-red-600 px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-2">
+          <i data-lucide="trash-2" class="w-4 h-4"></i>
+          Eliminar resueltos
+        </button>
+      </div>
       <div class="table-wrapper">
         <table class="w-full text-sm">
           <thead>
@@ -203,6 +211,27 @@
       </div>
       <button id="close-modal"
         class="w-full border border-gray-300 hover:bg-gray-50 text-gray-700 py-3 rounded-xl font-medium transition-all">Cancelar</button>
+    </div>
+  </div>
+
+  <div id="delete-modal" class="fixed inset-0 z-50 hidden items-center justify-center modal-backdrop p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 animate-fade-in-up">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center">
+          <i data-lucide="trash-2" class="w-5 h-5 text-red-600"></i>
+        </div>
+        <h3 id="delete-modal-title" class="text-lg font-bold text-gray-900">Eliminar ticket</h3>
+      </div>
+      <p id="delete-modal-text" class="text-sm text-gray-700 mb-2"></p>
+      <p class="text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl p-3 mb-6">
+        Esta acción no se puede deshacer. También se borra la foto del ticket, si tiene.
+      </p>
+      <div class="flex gap-3">
+        <button id="cancel-delete"
+          class="flex-1 border border-gray-300 hover:bg-gray-50 text-gray-700 py-3 rounded-xl font-medium transition-all text-sm">Cancelar</button>
+        <button id="confirm-delete"
+          class="flex-1 bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white py-3 rounded-xl font-semibold transition-all text-sm">Sí, eliminar</button>
+      </div>
     </div>
   </div>
 
@@ -297,7 +326,7 @@
   </div>
 
   <script type="module">
-    import { getAllIncidencias, updateIncidenciaEstado, getIncidenciaStats, ZONA_LABELS, ESTADO_COLORS } from './js/api.js'
+    import { getAllIncidencias, updateIncidenciaEstado, deleteIncidenciasResueltas, getIncidenciaStats, ZONA_LABELS, ESTADO_COLORS } from './js/api.js'
     import { getAdminSession, adminLogout } from './js/auth.js'
     import { buildReportUrl } from './js/qr-reader.js'
     import QRCode from 'qrcode'
@@ -365,9 +394,19 @@
       return /^https:\/\/[^\s"'<>]+$/.test(url || '') ? url : null
     }
 
+    function updateBulkBar(incidencias) {
+      const bar = document.getElementById('bulk-bar')
+      if (!bar) return
+      const count = incidencias.filter(i => i.estado === 'Resuelto').length
+      document.getElementById('bulk-count').textContent = count
+      bar.classList.toggle('hidden', count === 0)
+      bar.classList.toggle('flex', count > 0)
+    }
+
     function renderTable(incidencias) {
       const tbody = document.getElementById('incidencias-tbody')
       if (!tbody) return;
+      updateBulkBar(incidencias)
 
       if (incidencias.length === 0) {
         tbody.innerHTML = `
@@ -424,6 +463,10 @@
                 <button onclick="openStateModal('${inc.ticket_number}')" class="p-2 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-all" title="Cambiar estado">
                   <i data-lucide="refresh-cw" class="w-4 h-4"></i>
                 </button>
+                ${inc.estado === 'Resuelto' ? `
+                <button onclick="askDeleteTicket('${inc.ticket_number}')" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all" title="Eliminar ticket resuelto">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>` : ''}
               </div>
             </td>
           </tr>`
@@ -492,6 +535,62 @@
     })
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') closePhotoModal()
+    })
+
+    let pendingDelete = []
+
+    function openDeleteModal(lista, esMasivo) {
+      pendingDelete = lista
+      document.getElementById('delete-modal-title').textContent = esMasivo ? 'Eliminar tickets resueltos' : 'Eliminar ticket'
+      document.getElementById('delete-modal-text').textContent = esMasivo
+        ? `¿Seguro que quieres eliminar los ${lista.length} tickets resueltos que aparecen en la lista? Si tienes filtros activos, solo se eliminan los que ves.`
+        : `¿Seguro que quieres eliminar el ticket ${lista[0].ticket_number}?`
+      const modal = document.getElementById('delete-modal')
+      modal.classList.remove('hidden')
+      modal.classList.add('flex')
+    }
+
+    function closeDeleteModal() {
+      const modal = document.getElementById('delete-modal')
+      modal.classList.add('hidden')
+      modal.classList.remove('flex')
+      pendingDelete = []
+    }
+
+    window.askDeleteTicket = (ticket) => {
+      const inc = allIncidencias.find(i => i.ticket_number === ticket)
+      if (inc && inc.estado === 'Resuelto') openDeleteModal([inc], false)
+    }
+
+    document.getElementById('bulk-delete-btn').addEventListener('click', () => {
+      const resueltos = allIncidencias.filter(i => i.estado === 'Resuelto')
+      if (resueltos.length > 0) openDeleteModal(resueltos, true)
+    })
+
+    document.getElementById('cancel-delete').addEventListener('click', closeDeleteModal)
+    document.getElementById('delete-modal').addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) closeDeleteModal()
+    })
+
+    document.getElementById('confirm-delete').addEventListener('click', async (e) => {
+      const btn = e.currentTarget
+      if (pendingDelete.length === 0) return
+      btn.disabled = true
+      btn.textContent = 'Eliminando...'
+      try {
+        await deleteIncidenciasResueltas(pendingDelete)
+        closeDeleteModal()
+        await loadData()
+      } catch (err) {
+        alert('Error al eliminar: ' + err.message)
+      } finally {
+        btn.disabled = false
+        btn.textContent = 'Sí, eliminar'
+      }
+    })
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeDeleteModal()
     })
 
     window.openStateModal = (ticket) => {

@@ -216,7 +216,16 @@
           <a href="consultar.html" class="hover:text-white transition-colors">Consultar</a>
           <a href="login.html" class="hover:text-white transition-colors">Admin</a>
         </div>
-        <p class="text-sm text-gray-500">Conjunto Residencial Monteclaro P.H. - Suba, Bogotá</p>
+        <div class="text-sm text-gray-500 text-center md:text-right">
+          <p><span data-legal="direccion"></span></p>
+          <p><a data-legal="correo-link" class="hover:text-white"></a></p>
+        </div>
+      </div>
+      <div class="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm mt-8">
+        <a href="aviso-privacidad.html" class="hover:text-white transition-colors">Aviso de privacidad</a>
+        <a href="politica-datos-personales.html" class="hover:text-white transition-colors">Política de datos personales</a>
+        <a href="politica-cookies.html" class="hover:text-white transition-colors">Política de cookies</a>
+        <a href="politica-respaldo.html" class="hover:text-white transition-colors">Política de respaldo</a>
       </div>
       <div class="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-500">
         Comunify © 2026 - Plataforma de gestión de incidencias en propiedad horizontal
@@ -224,6 +233,7 @@
     </div>
   </footer>
 
+  <script type="module" src="/js/legal-ui.js"></script>
   <script>lucide.createIcons()</script>
 </body>
 </html>

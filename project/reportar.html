@@ -130,7 +130,7 @@
           <!-- Foto evidencia -->
           <div>
             <label class="block text-sm font-semibold text-gray-700 mb-2">
-              Foto de evidencia <span class="text-gray-400 text-xs font-normal">(JPG/PNG, máx. 5 MB para ser aceptada)</span>
+              Foto de evidencia <span class="text-red-500">*</span> <span class="text-gray-400 text-xs font-normal">(obligatoria · JPG/PNG, máx. 5 MB)</span>
             </label>
             <div id="file-input-wrapper" class="file-input-wrapper no-click">
               <input type="file" id="foto" accept="image/jpeg,image/png" class="hidden">
@@ -233,8 +233,16 @@
   </main>
 
   <footer class="bg-gray-900 text-gray-500 py-6 px-4 text-center text-sm">
+    <p class="mb-2">
+    <a href="aviso-privacidad.html" class="hover:text-white transition-colors underline">Aviso de privacidad</a> ·
+    <a href="politica-datos-personales.html" class="hover:text-white transition-colors underline">Datos personales</a> ·
+    <a href="politica-cookies.html" class="hover:text-white transition-colors underline">Cookies</a> ·
+    <a href="politica-respaldo.html" class="hover:text-white transition-colors underline">Respaldo</a>
+    </p>
     Comunify © 2026 - Conjunto Residencial Monteclaro P.H.
   </footer>
+
+  <script type="module" src="/js/legal-ui.js"></script>
 
   <script type="module">
     import { createIncidencia, uploadFoto, sanitizeText } from './js/api.js'
@@ -396,9 +404,14 @@
       }
 
       const errors = validateIncidencia(data)
+      if (!selectedFile) {
+        errors.foto = 'La foto de evidencia es obligatoria. Toma una foto o sube una desde tu equipo.'
+      }
       const errorKeys = Object.keys(errors)
       if (errorKeys.length > 0) {
         errorKeys.forEach(key => showFieldError(key, errors[key]))
+        const firstError = document.getElementById(`${errorKeys[0]}-error`)
+        if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' })
         return
       }
 
@@ -407,11 +420,8 @@
       btn.innerHTML = '<div class="spinner"></div> Enviando...'
 
       try {
-        let fotoUrl = null
-        if (selectedFile) {
-          const tempTicket = `TCK-${Date.now()}`
-          fotoUrl = await uploadFoto(selectedFile, tempTicket)
-        }
+        const tempTicket = `TCK-${Date.now()}`
+        const fotoUrl = await uploadFoto(selectedFile, tempTicket)
 
         const result = await createIncidencia({
           descripcion: data.descripcion,
