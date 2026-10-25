@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/assets/logo-icon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Resultado del pago - Comunify</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: { colors: { comunify: { blue: "#0D9488", "blue-light": "#14B8A6", "blue-dark": "#0F766E" } } } }
+    }
+  </script>
+  <link rel="stylesheet" href="/css/custom.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+<body class="bg-gray-50 text-gray-900 min-h-screen flex flex-col">
+
+  <nav class="bg-white border-b border-gray-200 sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
+        <a href="index.html" class="flex items-center gap-3"><img src="/assets/logo-comunify.png" alt="Comunify" class="h-16"></a>
+        <div class="flex items-center gap-6">
+          <a href="planes.html" class="text-gray-600 hover:text-comunify-blue text-sm font-medium transition-colors">Planes</a>
+          <a href="consultar.html" class="text-gray-600 hover:text-comunify-blue text-sm font-medium transition-colors">Consultar ticket</a>
+          <a href="index.html" class="text-gray-600 hover:text-comunify-blue text-sm font-medium transition-colors">Inicio</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="flex-1 flex items-center justify-center py-12 px-4">
+    <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-8 max-w-md w-full text-center">
+      <div id="icono" class="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center bg-gray-100">
+        <div class="spinner"></div>
+      </div>
+      <h1 id="titulo" class="text-2xl font-bold mb-2">Verificando tu pago...</h1>
+      <p id="mensaje" class="text-gray-600 text-sm mb-4">Estamos confirmando la transacción con Wompi.</p>
+      <div id="detalle" class="hidden bg-gray-50 rounded-xl p-4 text-sm text-left mb-6">
+        <div class="flex justify-between"><span class="text-gray-500">Referencia</span><span id="ref" class="font-mono text-xs"></span></div>
+        <div class="flex justify-between mt-1"><span class="text-gray-500">Total</span><span id="total" class="font-semibold"></span></div>
+      </div>
+      <div class="flex gap-3">
+        <a href="planes.html" class="flex-1 border border-gray-300 hover:bg-gray-50 text-gray-700 py-3 rounded-xl font-semibold text-sm">Volver a planes</a>
+        <a href="index.html" class="flex-1 bg-comunify-blue hover:bg-comunify-blue-dark text-white py-3 rounded-xl font-semibold text-sm">Inicio</a>
+      </div>
+    </div>
+  </main>
+
+  <footer class="bg-gray-900 text-gray-500 py-6 px-4 text-center text-sm mt-auto">
+    Comunify © 2026 - Pagos procesados por Wompi (Bancolombia). Valores en pesos colombianos (COP).
+  </footer>
+
+  <script type="module" src="/js/legal-ui.js"></script>
+  <script type="module">
+    import { leerReferencia, consultarPago, formatCOP } from './js/pagos.js'
+    lucide.createIcons()
+
+    const $ = (id) => document.getElementById(id)
+    const ESTADOS = {
+      APPROVED: { t: 'Pago aprobado', m: 'Tu suscripción de Comunify quedó activa. Gracias por confiar en nosotros.', c: 'bg-green-100 text-green-600', i: 'check-circle' },
+      DECLINED: { t: 'Pago rechazado', m: 'Tu banco o entidad rechazó la transacción. No se hizo ningún cobro; puedes intentarlo de nuevo.', c: 'bg-red-100 text-red-600', i: 'x-circle' },
+      VOIDED:   { t: 'Pago anulado', m: 'La transacción fue anulada. Puedes intentarlo de nuevo.', c: 'bg-red-100 text-red-600', i: 'x-circle' },
+      ERROR:    { t: 'No se pudo procesar', m: 'Ocurrió un error con el pago. Inténtalo de nuevo o escribe al correo de soporte.', c: 'bg-red-100 text-red-600', i: 'alert-triangle' },
+    }
+
+    function mostrar(p) {
+      const e = ESTADOS[p.estado]
+      $('detalle').classList.remove('hidden')
+      $('ref').textContent = p.reference
+      $('total').textContent = formatCOP(p.total_cop)
+      if (!e) return
+      $('titulo').textContent = e.t
+      $('mensaje').textContent = e.m
+      $('icono').className = `w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center ${e.c}`
+      $('icono').innerHTML = `<i data-lucide="${e.i}" class="w-8 h-8"></i>`
+      lucide.createIcons()
+    }
+
+    async function verificar(intentos) {
+      const ref = leerReferencia()
+      if (!ref) {
+        $('titulo').textContent = 'No encontramos el pago'
+        $('mensaje').textContent = 'Entra de nuevo desde la página de planes.'
+        $('icono').innerHTML = '<i data-lucide="search-x" class="w-8 h-8 text-gray-500"></i>'
+        lucide.createIcons()
+        return
+      }
+      try {
+        const pago = await consultarPago(ref)
+        if (pago) mostrar(pago)
+        // Wompi avisa al servidor unos segundos después: se vuelve a consultar mientras siga pendiente
+        if ((!pago || pago.estado === 'PENDING') && intentos > 0) {
+          if (pago) { $('titulo').textContent = 'Pago en proceso'; $('mensaje').textContent = 'Todavía estamos esperando la confirmación del banco. Esta página se actualiza sola.' }
+          setTimeout(() => verificar(intentos - 1), 3000)
+        }
+      } catch {
+        $('titulo').textContent = 'No pudimos verificar el pago'
+        $('mensaje').textContent = 'Revisa tu conexión y recarga la página.'
+      }
+    }
+    verificar(15)
+  </script>
+</body>
+</html>

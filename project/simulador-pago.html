@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/assets/logo-icon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simulador de pagos - Comunify</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: { colors: { comunify: { blue: "#0D9488", "blue-light": "#14B8A6", "blue-dark": "#0F766E" } } } }
+    }
+  </script>
+  <link rel="stylesheet" href="/css/custom.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+<body class="bg-gray-50 text-gray-900 min-h-screen flex flex-col">
+
+  <nav class="bg-white border-b border-gray-200 sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
+        <a href="index.html" class="flex items-center gap-3"><img src="/assets/logo-comunify.png" alt="Comunify" class="h-16"></a>
+        <div class="flex items-center gap-6">
+          <a href="planes.html" class="text-gray-600 hover:text-comunify-blue text-sm font-medium transition-colors">Planes</a>
+          <a href="consultar.html" class="text-gray-600 hover:text-comunify-blue text-sm font-medium transition-colors">Consultar ticket</a>
+          <a href="index.html" class="text-gray-600 hover:text-comunify-blue text-sm font-medium transition-colors">Inicio</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="bg-amber-100 border-b border-amber-300 text-amber-900 text-sm text-center px-4 py-2 font-medium">
+    SIMULADOR DE PAGOS · Entorno de demostración. No se hace ningún cobro real: no escribas datos reales de tarjetas ni cuentas.
+  </div>
+
+  <main class="flex-1 flex items-center justify-center py-10 px-4">
+    <div class="bg-white rounded-2xl border border-gray-200 shadow-sm max-w-lg w-full overflow-hidden">
+      <div class="bg-gray-900 text-white px-6 py-5">
+        <p class="text-xs uppercase tracking-wider text-gray-400">Comunify · Pasarela simulada</p>
+        <p class="text-sm text-gray-300 mt-1">Referencia: <span id="ref" class="font-mono text-xs">...</span></p>
+        <p class="text-3xl font-bold mt-2" id="total">...</p>
+      </div>
+
+      <div class="p-6 space-y-5">
+        <div>
+          <p class="text-sm font-semibold text-gray-700 mb-2">1. Elige cómo pagar</p>
+          <div class="grid grid-cols-3 gap-2" id="metodos"></div>
+        </div>
+
+        <div id="campos" class="space-y-3"></div>
+
+        <div>
+          <p class="text-sm font-semibold text-gray-700 mb-2">2. Resultado que quieres simular</p>
+          <div class="grid grid-cols-3 gap-2" id="resultados"></div>
+        </div>
+
+        <div id="error" class="hidden bg-red-50 border border-red-200 rounded-xl p-3 text-sm text-red-700"></div>
+
+        <button id="pagar" type="button" class="w-full bg-comunify-blue hover:bg-comunify-blue-dark text-white py-3.5 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2">Pagar</button>
+        <a href="planes.html" class="block text-center text-sm text-gray-500 hover:text-gray-700">Cancelar y volver a planes</a>
+      </div>
+    </div>
+  </main>
+  <footer class="bg-gray-900 text-gray-500 py-6 px-4 text-center text-sm mt-auto">
+    Comunify © 2026 - Pagos procesados por Wompi (Bancolombia). Valores en pesos colombianos (COP).
+  </footer>
+
+  <script type="module" src="/js/legal-ui.js"></script>
+  <script type="module">
+    import { leerReferencia, consultarPago, simularPago, formatCOP } from './js/pagos.js'
+    lucide.createIcons()
+
+    const $ = (id) => document.getElementById(id)
+    const activo = 'bg-comunify-blue text-white border-comunify-blue'
+    const inactivo = 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+    const inputCls = 'w-full px-4 py-3 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-comunify-blue focus:border-transparent'
+
+    const METODOS = {
+      PSE: `<select class="${inputCls}"><option>Banco de pruebas A</option><option>Banco de pruebas B</option><option>Banco de pruebas C</option></select>
+            <select class="${inputCls}"><option>Persona natural</option><option>Persona jurídica</option></select>`,
+      Tarjeta: `<input class="${inputCls}" placeholder="Número de tarjeta (simulado)" maxlength="19" inputmode="numeric">
+                <div class="grid grid-cols-2 gap-3"><input class="${inputCls}" placeholder="MM/AA" maxlength="5"><input class="${inputCls}" placeholder="CVV" maxlength="4" inputmode="numeric"></div>`,
+      Nequi: `<input class="${inputCls}" placeholder="Celular Nequi (simulado)" maxlength="10" inputmode="numeric">`,
+    }
+    const RESULTADOS = { APPROVED: 'Aprobado', DECLINED: 'Rechazado', ERROR: 'Error' }
+    let metodo = 'PSE'
+    let resultado = 'APPROVED'
+
+    function pintar() {
+      $('metodos').innerHTML = ''
+      Object.keys(METODOS).forEach((m) => {
+        const b = document.createElement('button')
+        b.type = 'button'; b.textContent = m
+        b.className = `py-2.5 rounded-xl text-sm font-semibold border ${metodo === m ? activo : inactivo}`
+        b.addEventListener('click', () => { metodo = m; pintar() })
+        $('metodos').appendChild(b)
+      })
+      $('campos').innerHTML = METODOS[metodo]
+      $('resultados').innerHTML = ''
+      Object.entries(RESULTADOS).forEach(([k, t]) => {
+        const b = document.createElement('button')
+        b.type = 'button'; b.textContent = t
+        b.className = `py-2.5 rounded-xl text-sm font-semibold border ${resultado === k ? activo : inactivo}`
+        b.addEventListener('click', () => { resultado = k; pintar() })
+        $('resultados').appendChild(b)
+      })
+    }
+
+    const ref = leerReferencia()
+    if (!ref) { location.href = 'planes.html' }
+
+    consultarPago(ref).then((p) => {
+      if (!p) { location.href = 'planes.html'; return }
+      if (p.estado !== 'PENDING') { location.href = `pago-resultado.html?ref=${ref}`; return }
+      $('ref').textContent = p.reference
+      $('total').textContent = formatCOP(p.total_cop)
+      $('pagar').textContent = `Pagar ${formatCOP(p.total_cop)}`
+    }).catch(() => { $('error').textContent = 'No se pudo cargar el pago.'; $('error').classList.remove('hidden') })
+
+    $('pagar').addEventListener('click', async () => {
+      const btn = $('pagar')
+      btn.disabled = true
+      btn.innerHTML = '<div class="spinner"></div> Procesando con el banco simulado...'
+      $('error').classList.add('hidden')
+      try {
+        await new Promise((r) => setTimeout(r, 1500)) // pausa para que parezca una pasarela real
+        await simularPago(ref, resultado, metodo)
+        location.href = `pago-resultado.html?ref=${ref}`
+      } catch (err) {
+        $('error').textContent = err.message
+        $('error').classList.remove('hidden')
+        btn.disabled = false
+        btn.textContent = 'Pagar'
+      }
+    })
+
+    pintar()
+  </script>
+</body>
+</html>

@@ -29,6 +29,11 @@
         </div>
         <div class="flex items-center gap-4">
           <span id="admin-email" class="text-sm text-gray-500 hidden sm:inline"></span>
+          <a href="solicitudes.html"
+            class="text-gray-600 hover:text-comunify-blue text-sm font-medium transition-colors flex items-center gap-1.5">
+            <i data-lucide="mail" class="w-4 h-4"></i>
+            <span class="hidden sm:inline">Solicitudes</span>
+          </a>
           <a href="qr-generator.html"
             class="text-gray-600 hover:text-comunify-blue text-sm font-medium transition-colors flex items-center gap-1.5">
             <i data-lucide="qr-code" class="w-4 h-4"></i>
@@ -141,13 +146,19 @@
       </div>
     </div>
 
+    <div class="flex gap-2 mb-3" role="tablist">
+      <button id="tab-activos" type="button" class="px-4 py-2 rounded-lg text-sm font-semibold border">Activos</button>
+      <button id="tab-archivados" type="button" class="px-4 py-2 rounded-lg text-sm font-semibold border">Archivados (<span id="tab-archivados-count">0</span>)</button>
+    </div>
+    <p id="archivados-info" class="hidden text-sm text-gray-500 mb-3">Estos tickets están archivados: no aparecen en el panel de activos, pero siguen disponibles en «Consultar ticket» con su número.</p>
+
     <div class="bg-white rounded-xl card-shadow overflow-hidden">
       <div id="bulk-bar" class="hidden px-4 py-3 border-b border-gray-100 bg-gray-50 items-center justify-between gap-3">
         <p class="text-sm text-gray-600"><span id="bulk-count" class="font-semibold">0</span> ticket(s) resuelto(s) en la lista</p>
-        <button id="bulk-delete-btn"
-          class="border border-red-200 hover:bg-red-50 text-red-600 px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-2">
-          <i data-lucide="trash-2" class="w-4 h-4"></i>
-          Eliminar resueltos
+        <button id="bulk-archive-btn"
+          class="border border-comunify-blue/40 hover:bg-comunify-blue/5 text-comunify-blue px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-2">
+          <i data-lucide="archive" class="w-4 h-4"></i>
+          Archivar resueltos
         </button>
       </div>
       <div class="table-wrapper">
@@ -214,23 +225,23 @@
     </div>
   </div>
 
-  <div id="delete-modal" class="fixed inset-0 z-50 hidden items-center justify-center modal-backdrop p-4">
+  <div id="archive-modal" class="fixed inset-0 z-50 hidden items-center justify-center modal-backdrop p-4">
     <div class="bg-white rounded-2xl max-w-md w-full p-6 animate-fade-in-up">
       <div class="flex items-center gap-3 mb-4">
-        <div class="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center">
-          <i data-lucide="trash-2" class="w-5 h-5 text-red-600"></i>
+        <div class="w-10 h-10 bg-comunify-blue/10 rounded-xl flex items-center justify-center">
+          <i data-lucide="archive" class="w-5 h-5 text-comunify-blue"></i>
         </div>
-        <h3 id="delete-modal-title" class="text-lg font-bold text-gray-900">Eliminar ticket</h3>
+        <h3 id="archive-modal-title" class="text-lg font-bold text-gray-900">Archivar ticket</h3>
       </div>
-      <p id="delete-modal-text" class="text-sm text-gray-700 mb-2"></p>
-      <p class="text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl p-3 mb-6">
-        Esta acción no se puede deshacer. También se borra la foto del ticket, si tiene.
+      <p id="archive-modal-text" class="text-sm text-gray-700 mb-2"></p>
+      <p class="text-sm text-gray-700 bg-gray-50 border border-gray-200 rounded-xl p-3 mb-6">
+        No se borra nada: el ticket y su foto se conservan, se pueden consultar con su número y puedes restaurarlo desde la pestaña «Archivados».
       </p>
       <div class="flex gap-3">
-        <button id="cancel-delete"
+        <button id="cancel-archive"
           class="flex-1 border border-gray-300 hover:bg-gray-50 text-gray-700 py-3 rounded-xl font-medium transition-all text-sm">Cancelar</button>
-        <button id="confirm-delete"
-          class="flex-1 bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white py-3 rounded-xl font-semibold transition-all text-sm">Sí, eliminar</button>
+        <button id="confirm-archive"
+          class="flex-1 bg-comunify-blue hover:bg-comunify-blue-dark disabled:opacity-60 text-white py-3 rounded-xl font-semibold transition-all text-sm">Sí, archivar</button>
       </div>
     </div>
   </div>
@@ -326,7 +337,11 @@
   </div>
 
   <script type="module">
-    import { getAllIncidencias, updateIncidenciaEstado, deleteIncidenciasResueltas, getIncidenciaStats, ZONA_LABELS, ESTADO_COLORS } from './js/api.js'
+    import { protegerPagina } from './js/acceso.js'
+    protegerPagina()
+  </script>
+  <script type="module">
+    import { getAllIncidencias, updateIncidenciaEstado, archiveIncidencias, restoreIncidencia, getIncidenciaStats, ZONA_LABELS, ESTADO_COLORS } from './js/api.js'
     import { getAdminSession, adminLogout } from './js/auth.js'
     import { buildReportUrl } from './js/qr-reader.js'
     import QRCode from 'qrcode'
@@ -347,6 +362,7 @@
     if (logoutBtn) logoutBtn.addEventListener('click', adminLogout)
 
     let allIncidencias = []
+    let verArchivados = false
     let currentTicketForState = null
 
     const ZONA_ICONS = {
@@ -374,6 +390,7 @@
         torre: document.getElementById('filter-torre')?.value || 'all',
         piso: document.getElementById('filter-piso')?.value || 'all',
         estado: document.getElementById('filter-estado')?.value || 'all',
+        archivadas: verArchivados,
       }
     }
 
@@ -388,6 +405,8 @@
       if (elPendientes) elPendientes.textContent = stats.pendientes || 0
       if (elProceso) elProceso.textContent = stats.enProceso || 0
       if (elResueltos) elResueltos.textContent = stats.resueltos || 0
+      const elArch = document.getElementById('tab-archivados-count')
+      if (elArch) elArch.textContent = stats.archivados || 0
     }
 
     function safeFotoUrl(url) {
@@ -397,7 +416,7 @@
     function updateBulkBar(incidencias) {
       const bar = document.getElementById('bulk-bar')
       if (!bar) return
-      const count = incidencias.filter(i => i.estado === 'Resuelto').length
+      const count = verArchivados ? 0 : incidencias.filter(i => i.estado === 'Resuelto').length
       document.getElementById('bulk-count').textContent = count
       bar.classList.toggle('hidden', count === 0)
       bar.classList.toggle('flex', count > 0)
@@ -413,7 +432,7 @@
           <tr><td colspan="8" class="px-4 py-12 text-center text-gray-400">
             <div class="flex flex-col items-center gap-2">
               <i data-lucide="inbox" class="w-8 h-8 text-gray-300"></i>
-              <p class="text-sm">No hay incidencias que coincidan con los filtros</p>
+              <p class="text-sm">${verArchivados ? 'No hay tickets archivados' : 'No hay incidencias que coincidan con los filtros'}</p>
             </div>
           </td></tr>`
         if (window.lucide) window.lucide.createIcons()
@@ -460,13 +479,17 @@
                 <button onclick="viewDetail('${inc.ticket_number}')" class="p-2 text-gray-400 hover:text-comunify-blue hover:bg-blue-50 rounded-lg transition-all" title="Ver detalle">
                   <i data-lucide="eye" class="w-4 h-4"></i>
                 </button>
+                ${verArchivados ? `
+                <button onclick="restoreTicket('${inc.ticket_number}')" class="p-2 text-gray-400 hover:text-comunify-blue hover:bg-comunify-blue/10 rounded-lg transition-all" title="Restaurar al panel">
+                  <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                </button>` : `
                 <button onclick="openStateModal('${inc.ticket_number}')" class="p-2 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-all" title="Cambiar estado">
                   <i data-lucide="refresh-cw" class="w-4 h-4"></i>
                 </button>
                 ${inc.estado === 'Resuelto' ? `
-                <button onclick="askDeleteTicket('${inc.ticket_number}')" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all" title="Eliminar ticket resuelto">
-                  <i data-lucide="trash-2" class="w-4 h-4"></i>
-                </button>` : ''}
+                <button onclick="askArchiveTicket('${inc.ticket_number}')" class="p-2 text-gray-400 hover:text-comunify-blue hover:bg-comunify-blue/10 rounded-lg transition-all" title="Archivar ticket resuelto">
+                  <i data-lucide="archive" class="w-4 h-4"></i>
+                </button>` : ''}`}
               </div>
             </td>
           </tr>`
@@ -537,60 +560,80 @@
       if (e.key === 'Escape') closePhotoModal()
     })
 
-    let pendingDelete = []
+    let pendingArchive = []
 
-    function openDeleteModal(lista, esMasivo) {
-      pendingDelete = lista
-      document.getElementById('delete-modal-title').textContent = esMasivo ? 'Eliminar tickets resueltos' : 'Eliminar ticket'
-      document.getElementById('delete-modal-text').textContent = esMasivo
-        ? `¿Seguro que quieres eliminar los ${lista.length} tickets resueltos que aparecen en la lista? Si tienes filtros activos, solo se eliminan los que ves.`
-        : `¿Seguro que quieres eliminar el ticket ${lista[0].ticket_number}?`
-      const modal = document.getElementById('delete-modal')
+    function openArchiveModal(lista, esMasivo) {
+      pendingArchive = lista
+      document.getElementById('archive-modal-title').textContent = esMasivo ? 'Archivar tickets resueltos' : 'Archivar ticket'
+      document.getElementById('archive-modal-text').textContent = esMasivo
+        ? `¿Archivar los ${lista.length} tickets resueltos que aparecen en la lista? Si tienes filtros activos, solo se archivan los que ves.`
+        : `¿Archivar el ticket ${lista[0].ticket_number}?`
+      const modal = document.getElementById('archive-modal')
       modal.classList.remove('hidden')
       modal.classList.add('flex')
     }
 
-    function closeDeleteModal() {
-      const modal = document.getElementById('delete-modal')
+    function closeArchiveModal() {
+      const modal = document.getElementById('archive-modal')
       modal.classList.add('hidden')
       modal.classList.remove('flex')
-      pendingDelete = []
+      pendingArchive = []
     }
 
-    window.askDeleteTicket = (ticket) => {
+    window.askArchiveTicket = (ticket) => {
       const inc = allIncidencias.find(i => i.ticket_number === ticket)
-      if (inc && inc.estado === 'Resuelto') openDeleteModal([inc], false)
+      if (inc && inc.estado === 'Resuelto') openArchiveModal([inc], false)
     }
 
-    document.getElementById('bulk-delete-btn').addEventListener('click', () => {
+    document.getElementById('bulk-archive-btn').addEventListener('click', () => {
       const resueltos = allIncidencias.filter(i => i.estado === 'Resuelto')
-      if (resueltos.length > 0) openDeleteModal(resueltos, true)
+      if (resueltos.length > 0) openArchiveModal(resueltos, true)
     })
 
-    document.getElementById('cancel-delete').addEventListener('click', closeDeleteModal)
-    document.getElementById('delete-modal').addEventListener('click', (e) => {
-      if (e.target === e.currentTarget) closeDeleteModal()
-    })
-
-    document.getElementById('confirm-delete').addEventListener('click', async (e) => {
-      const btn = e.currentTarget
-      if (pendingDelete.length === 0) return
-      btn.disabled = true
-      btn.textContent = 'Eliminando...'
+    window.restoreTicket = async (ticket) => {
       try {
-        await deleteIncidenciasResueltas(pendingDelete)
-        closeDeleteModal()
+        await restoreIncidencia(ticket)
         await loadData()
       } catch (err) {
-        alert('Error al eliminar: ' + err.message)
+        alert('Error al restaurar: ' + err.message)
+      }
+    }
+
+    function pintarPestanas() {
+      const on = 'px-4 py-2 rounded-lg text-sm font-semibold border bg-comunify-blue text-white border-comunify-blue'
+      const off = 'px-4 py-2 rounded-lg text-sm font-semibold border bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+      document.getElementById('tab-activos').className = verArchivados ? off : on
+      document.getElementById('tab-archivados').className = verArchivados ? on : off
+      document.getElementById('archivados-info').classList.toggle('hidden', !verArchivados)
+    }
+    document.getElementById('tab-activos').addEventListener('click', () => { verArchivados = false; pintarPestanas(); loadData() })
+    document.getElementById('tab-archivados').addEventListener('click', () => { verArchivados = true; pintarPestanas(); loadData() })
+    pintarPestanas()
+
+    document.getElementById('cancel-archive').addEventListener('click', closeArchiveModal)
+    document.getElementById('archive-modal').addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) closeArchiveModal()
+    })
+
+    document.getElementById('confirm-archive').addEventListener('click', async (e) => {
+      const btn = e.currentTarget
+      if (pendingArchive.length === 0) return
+      btn.disabled = true
+      btn.textContent = 'Archivando...'
+      try {
+        await archiveIncidencias(pendingArchive)
+        closeArchiveModal()
+        await loadData()
+      } catch (err) {
+        alert('Error al archivar: ' + err.message)
       } finally {
         btn.disabled = false
-        btn.textContent = 'Sí, eliminar'
+        btn.textContent = 'Sí, archivar'
       }
     })
 
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') closeDeleteModal()
+      if (e.key === 'Escape') closeArchiveModal()
     })
 
     window.openStateModal = (ticket) => {

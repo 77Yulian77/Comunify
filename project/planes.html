@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/assets/logo-icon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Planes y pago - Comunify</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: { colors: { comunify: { blue: "#0D9488", "blue-light": "#14B8A6", "blue-dark": "#0F766E" } } } }
+    }
+  </script>
+  <link rel="stylesheet" href="/css/custom.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+<body class="bg-gray-50 text-gray-900 min-h-screen flex flex-col">
+
+  <nav class="bg-white border-b border-gray-200 sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
+        <a href="index.html" class="flex items-center gap-3"><img src="/assets/logo-comunify.png" alt="Comunify" class="h-16"></a>
+        <div class="flex items-center gap-6">
+          <a href="planes.html" class="text-gray-600 hover:text-comunify-blue text-sm font-medium transition-colors">Planes</a>
+          <a href="consultar.html" class="text-gray-600 hover:text-comunify-blue text-sm font-medium transition-colors">Consultar ticket</a>
+          <a href="index.html" class="text-gray-600 hover:text-comunify-blue text-sm font-medium transition-colors">Inicio</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="flex-1 py-10 px-4">
+    <div class="max-w-6xl mx-auto">
+      <div class="text-center mb-10">
+        <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-3">Contrata Comunify para tu conjunto</h1>
+        <p class="text-gray-600 max-w-2xl mx-auto">Suscripción mensual por conjunto residencial. Eliges cuántos meses pagar, revisas tu carrito y pagas de forma segura con Wompi.</p>
+      </div>
+
+      <div class="grid lg:grid-cols-5 gap-8">
+
+        <!-- Plan -->
+        <section class="lg:col-span-2 bg-white rounded-2xl border border-gray-200 p-6 h-fit">
+          <span class="inline-block bg-comunify-blue/10 text-comunify-blue text-xs font-semibold rounded-full px-3 py-1 mb-4">Plan único</span>
+          <h2 class="text-xl font-bold mb-1">Suscripción Comunify</h2>
+          <p class="text-3xl font-bold text-comunify-blue" id="precio-mensual">$450.000</p>
+          <p class="text-sm text-gray-500 mb-5">por conjunto, cada mes</p>
+          <ul class="space-y-3 text-sm text-gray-700">
+            <li class="flex gap-2"><i data-lucide="check" class="w-4 h-4 text-comunify-blue mt-0.5 flex-shrink-0"></i> Reporte de incidencias por código QR (torre, piso y zona)</li>
+            <li class="flex gap-2"><i data-lucide="check" class="w-4 h-4 text-comunify-blue mt-0.5 flex-shrink-0"></i> Foto de evidencia y número de ticket para cada reporte</li>
+            <li class="flex gap-2"><i data-lucide="check" class="w-4 h-4 text-comunify-blue mt-0.5 flex-shrink-0"></i> Panel administrativo con filtros y cambio de estado</li>
+            <li class="flex gap-2"><i data-lucide="check" class="w-4 h-4 text-comunify-blue mt-0.5 flex-shrink-0"></i> Copias de respaldo diarias de la base de datos</li>
+          </ul>
+          <div class="mt-5 pt-5 border-t border-gray-100 text-sm text-gray-600">
+            <p><strong>Cuota de instalación:</strong> <span id="precio-instalacion">$2.000.000</span> (una sola vez, solo para conjuntos nuevos): instalación, códigos QR y capacitación.</p>
+          </div>
+        </section>
+
+        <!-- Carrito + datos -->
+        <section class="lg:col-span-3 bg-white rounded-2xl border border-gray-200 p-6">
+          <h2 class="text-lg font-bold mb-4 flex items-center gap-2"><i data-lucide="shopping-cart" class="w-5 h-5"></i> Tu carrito</h2>
+
+          <div id="aviso-simulado" class="hidden mb-4 bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-800">Modo demostración: los pagos son simulados y no se cobra dinero real.</div>
+
+          <div class="grid grid-cols-3 gap-2 mb-5" role="tablist">
+            <button type="button" id="modo-prueba" class="modo-btn py-2.5 rounded-xl text-sm font-semibold border">Prueba gratis</button>
+            <button type="button" id="modo-alta" class="modo-btn py-2.5 rounded-xl text-sm font-semibold border">Conjunto nuevo</button>
+            <button type="button" id="modo-renovacion" class="modo-btn py-2.5 rounded-xl text-sm font-semibold border">Ya soy cliente</button>
+          </div>
+
+          <div id="bloque-carrito">
+          <p class="text-sm font-semibold text-gray-700 mb-2">Meses a pagar</p>
+          <div id="meses" class="grid grid-cols-4 gap-2 mb-5"></div>
+
+          <div id="items" class="divide-y divide-gray-100 border border-gray-200 rounded-xl mb-3"></div>
+          <div class="text-sm space-y-1 mb-6">
+            <div class="flex justify-between text-gray-600"><span>Subtotal</span><span id="subtotal"></span></div>
+            <div class="flex justify-between text-gray-600"><span>IVA</span><span id="iva"></span></div>
+            <div class="flex justify-between text-lg font-bold pt-2 border-t border-gray-200"><span>Total a pagar</span><span id="total" class="text-comunify-blue"></span></div>
+          </div>
+
+          </div>
+          <div id="info-prueba" class="hidden mb-5 bg-comunify-blue/5 border border-comunify-blue/20 rounded-xl p-4 text-sm text-gray-700">
+            <p class="font-semibold text-comunify-blue mb-1">7 días gratis, sin tarjeta</p>
+            <p>Usa Comunify completo durante una semana. Al terminar, la plataforma se bloquea y podrás decidir si quieres suscribirte o no. Solo se permite una prueba por conjunto.</p>
+          </div>
+          <div class="space-y-4">
+            <div id="campos-alta" class="space-y-4">
+              <div>
+                <label for="conjunto" class="block text-sm font-semibold text-gray-700 mb-1">Nombre del conjunto</label>
+                <input id="conjunto" maxlength="120" class="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-comunify-blue focus:border-transparent" placeholder="Ej: Conjunto Residencial Monteclaro P.H.">
+              </div>
+              <div class="grid sm:grid-cols-2 gap-4">
+                <div>
+                  <label for="contacto" class="block text-sm font-semibold text-gray-700 mb-1">Nombre del contacto</label>
+                  <input id="contacto" maxlength="100" class="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-comunify-blue focus:border-transparent" placeholder="Administrador(a)">
+                </div>
+                <div>
+                  <label for="telefono" class="block text-sm font-semibold text-gray-700 mb-1">Teléfono <span class="text-gray-400 text-xs font-normal">(opcional)</span></label>
+                  <input id="telefono" type="tel" maxlength="20" class="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-comunify-blue focus:border-transparent" placeholder="3001234567">
+                </div>
+              </div>
+            </div>
+            <div class="grid sm:grid-cols-2 gap-4">
+              <div>
+                <label for="nit" class="block text-sm font-semibold text-gray-700 mb-1">NIT del conjunto</label>
+                <input id="nit" maxlength="20" class="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-comunify-blue focus:border-transparent" placeholder="900123456">
+              </div>
+              <div>
+                <label for="email" class="block text-sm font-semibold text-gray-700 mb-1">Correo electrónico</label>
+                <input id="email" type="email" maxlength="120" class="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-comunify-blue focus:border-transparent" placeholder="admin@conjunto.com">
+              </div>
+            </div>
+          </div>
+
+          <label class="flex items-start gap-2 mt-5 text-sm text-gray-600">
+            <input id="acepto" type="checkbox" class="mt-1">
+            <span>Acepto el tratamiento de mis datos según la <a href="politica-datos-personales.html" class="text-comunify-blue underline">Política de datos personales</a>.</span>
+          </label>
+
+          <div id="error" class="hidden mt-4 bg-red-50 border border-red-200 rounded-xl p-3 text-sm text-red-700"></div>
+
+          <button id="pagar" type="button" class="w-full mt-5 bg-comunify-blue hover:bg-comunify-blue-dark text-white py-3.5 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2">
+            <i data-lucide="lock" class="w-5 h-5"></i> Pagar con Wompi
+          </button>
+          <p class="text-xs text-gray-500 text-center mt-3">Pagas en la página segura de Wompi con PSE, tarjeta débito o crédito, Nequi o Bancolombia. Comunify no guarda datos de tarjetas.</p>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <footer class="bg-gray-900 text-gray-500 py-6 px-4 text-center text-sm mt-auto">
+    Comunify © 2026 - Pagos procesados por Wompi (Bancolombia). Valores en pesos colombianos (COP).
+  </footer>
+
+  <script type="module" src="/js/legal-ui.js"></script>
+  <script type="module">
+    import { MESES_PERMITIDOS, PRECIO_SUSCRIPCION_MENSUAL, CUOTA_INSTALACION, formatCOP, calcularCarrito, iniciarPago, iniciarPrueba, modoPagos } from './js/pagos.js'
+
+    lucide.createIcons()
+    document.getElementById('precio-mensual').textContent = formatCOP(PRECIO_SUSCRIPCION_MENSUAL)
+    document.getElementById('precio-instalacion').textContent = formatCOP(CUOTA_INSTALACION)
+
+    let modo = location.hash === '#prueba' ? 'prueba' : 'alta'
+    let meses = 1
+    let simulado = false
+
+    const $ = (id) => document.getElementById(id)
+    const activo = 'bg-comunify-blue text-white border-comunify-blue'
+    const inactivo = 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+
+    function pintar() {
+      // Botones de modo
+      for (const [id, m] of [['modo-prueba', 'prueba'], ['modo-alta', 'alta'], ['modo-renovacion', 'renovacion']]) {
+        $(id).className = `modo-btn py-2.5 rounded-xl text-sm font-semibold border ${modo === m ? activo : inactivo}`
+      }
+      $('campos-alta').classList.toggle('hidden', modo === 'renovacion')
+      $('bloque-carrito').classList.toggle('hidden', modo === 'prueba')
+      $('info-prueba').classList.toggle('hidden', modo !== 'prueba')
+      if (!$('pagar').disabled) {
+        $('pagar').innerHTML = modo === 'prueba'
+          ? '<i data-lucide="rocket" class="w-5 h-5"></i> Iniciar prueba gratis'
+          : `<i data-lucide="lock" class="w-5 h-5"></i> ${simulado ? 'Pagar (simulado)' : 'Pagar con Wompi'}`
+        lucide.createIcons()
+      }
+
+      // Meses
+      $('meses').innerHTML = ''
+      MESES_PERMITIDOS.forEach((m) => {
+        const b = document.createElement('button')
+        b.type = 'button'
+        b.textContent = `${m} ${m === 1 ? 'mes' : 'meses'}`
+        b.className = `py-2.5 rounded-xl text-sm font-semibold border ${meses === m ? activo : inactivo}`
+        b.addEventListener('click', () => { meses = m; pintar() })
+        $('meses').appendChild(b)
+      })
+
+      // Carrito
+      const c = calcularCarrito({ modo, meses })
+      $('items').innerHTML = c.items.map((it) => `
+        <div class="flex justify-between gap-4 p-3 text-sm">
+          <div><p class="font-semibold text-gray-800">${it.nombre}</p><p class="text-gray-500 text-xs">${it.detalle}</p></div>
+          <p class="font-semibold whitespace-nowrap">${formatCOP(it.cantidad * it.precio)}</p>
+        </div>`).join('')
+      $('subtotal').textContent = formatCOP(c.subtotal)
+      $('iva').textContent = formatCOP(c.iva)
+      $('total').textContent = formatCOP(c.total)
+    }
+
+    $('modo-prueba').addEventListener('click', () => { modo = 'prueba'; pintar() })
+    $('modo-alta').addEventListener('click', () => { modo = 'alta'; pintar() })
+    $('modo-renovacion').addEventListener('click', () => { modo = 'renovacion'; pintar() })
+
+    function mostrarError(msg) {
+      $('error').textContent = msg
+      $('error').classList.remove('hidden')
+    }
+
+    $('pagar').addEventListener('click', async () => {
+      $('error').classList.add('hidden')
+      const datos = {
+        modo, meses,
+        nit: $('nit').value.trim(),
+        email: $('email').value.trim(),
+        conjunto: $('conjunto').value.trim(),
+        contacto: $('contacto').value.trim(),
+        telefono: $('telefono').value.trim(),
+      }
+
+      if (modo !== 'renovacion' && datos.conjunto.length < 3) return mostrarError('Escribe el nombre del conjunto.')
+      if (modo !== 'renovacion' && datos.contacto.length < 3) return mostrarError('Escribe el nombre del contacto.')
+      if (datos.nit.replace(/[^0-9A-Za-z]/g, '').length < 5) return mostrarError('Escribe un NIT válido.')
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(datos.email)) return mostrarError('Escribe un correo válido.')
+      if (!$('acepto').checked) return mostrarError('Debes aceptar la política de datos personales para continuar.')
+
+      const btn = $('pagar')
+      btn.disabled = true
+      btn.innerHTML = '<div class="spinner"></div> Procesando...'
+      try {
+        if (modo === 'prueba') {
+          const r = await iniciarPrueba(datos)
+          const fin = new Date(r.prueba_hasta).toLocaleDateString('es-CO', { day: '2-digit', month: 'long', year: 'numeric' })
+          $('error').classList.add('hidden')
+          btn.parentElement.innerHTML = `
+            <div class="text-center py-8">
+              <div class="w-14 h-14 rounded-full bg-green-100 text-green-600 mx-auto mb-4 flex items-center justify-center text-2xl">✓</div>
+              <h3 class="text-xl font-bold mb-2">¡Tu prueba gratuita está activa!</h3>
+              <p class="text-gray-600 text-sm mb-6">Puedes usar Comunify hasta el <strong>${fin}</strong>. Después podrás decidir si te suscribes.</p>
+              <div class="flex gap-3">
+                <a href="reportar.html" class="flex-1 bg-comunify-blue hover:bg-comunify-blue-dark text-white py-3 rounded-xl font-semibold text-sm">Reportar incidencia</a>
+                <a href="login.html" class="flex-1 border border-gray-300 hover:bg-gray-50 text-gray-700 py-3 rounded-xl font-semibold text-sm">Panel administrador</a>
+              </div>
+            </div>`
+          return
+        }
+        await iniciarPago(datos)
+      } catch (err) {
+        mostrarError(err.message)
+        btn.disabled = false
+        pintar()
+      }
+    })
+
+    modoPagos().then((m) => { if (m === 'simulado') { simulado = true; $('aviso-simulado').classList.remove('hidden'); pintar() } })
+    pintar()
+  </script>
+</body>
+</html>

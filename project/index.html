@@ -40,6 +40,9 @@
         <div class="hidden md:flex items-center gap-6">
           <a href="#caracteristicas" class="text-gray-600 hover:text-comunify-blue text-sm font-medium transition-colors">Características</a>
           <a href="#como-funciona" class="text-gray-600 hover:text-comunify-blue text-sm font-medium transition-colors">Cómo funciona</a>
+          <a href="#servicio" class="text-gray-600 hover:text-comunify-blue text-sm font-medium transition-colors hidden md:inline">Servicio</a>
+          <a href="planes.html" class="text-gray-600 hover:text-comunify-blue text-sm font-medium transition-colors">Planes</a>
+          <a href="#contacto" class="text-gray-600 hover:text-comunify-blue text-sm font-medium transition-colors">Contacto</a>
           <a href="consultar.html" class="text-gray-600 hover:text-comunify-blue text-sm font-medium transition-colors">Consultar ticket</a>
           <a href="login.html" class="text-gray-600 hover:text-comunify-blue text-sm font-medium transition-colors">Administrador</a>
         </div>
@@ -191,6 +194,134 @@
     </div>
   </section>
 
+  <!-- Cómo manejamos el servicio -->
+  <section id="servicio" class="py-20 px-4 sm:px-6 lg:px-8 bg-white">
+    <div class="max-w-6xl mx-auto">
+      <div class="text-center mb-14">
+        <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">Así manejamos el servicio</h2>
+        <p class="text-gray-600 max-w-2xl mx-auto">Comunify funciona por suscripción mensual para cada conjunto residencial. Esto es lo que hace cada parte.</p>
+      </div>
+      <div class="grid md:grid-cols-3 gap-8">
+        <div class="bg-gray-50 rounded-2xl p-8">
+          <div class="w-12 h-12 bg-comunify-blue/10 rounded-xl flex items-center justify-center mb-5"><i data-lucide="users" class="w-6 h-6 text-comunify-blue"></i></div>
+          <h3 class="text-xl font-bold mb-3">Para los residentes</h3>
+          <ul class="text-gray-600 text-sm space-y-2">
+            <li>Escanean el código QR de su zona o abren el formulario.</li>
+            <li>Describen el problema y adjuntan una foto (o la toman con la cámara).</li>
+            <li>Reciben un número de ticket para seguir el caso.</li>
+            <li>Consultan el estado cuando quieran, sin crear cuenta.</li>
+          </ul>
+        </div>
+        <div class="bg-gray-50 rounded-2xl p-8">
+          <div class="w-12 h-12 bg-comunify-blue/10 rounded-xl flex items-center justify-center mb-5"><i data-lucide="layout-dashboard" class="w-6 h-6 text-comunify-blue"></i></div>
+          <h3 class="text-xl font-bold mb-3">Para la administración</h3>
+          <ul class="text-gray-600 text-sm space-y-2">
+            <li>Panel con todos los reportes, filtros por torre, piso y estado.</li>
+            <li>Cada caso pasa de Pendiente a En proceso y a Resuelto.</li>
+            <li>Los casos resueltos se archivan: salen del panel pero siguen consultables.</li>
+            <li>Generador de códigos QR para cada zona del conjunto.</li>
+          </ul>
+        </div>
+        <div class="bg-gray-50 rounded-2xl p-8">
+          <div class="w-12 h-12 bg-comunify-blue/10 rounded-xl flex items-center justify-center mb-5"><i data-lucide="shield-check" class="w-6 h-6 text-comunify-blue"></i></div>
+          <h3 class="text-xl font-bold mb-3">Cómo lo operamos</h3>
+          <ul class="text-gray-600 text-sm space-y-2">
+            <li>Prueba gratuita de 7 días, sin tarjeta.</li>
+            <li>Suscripción mensual por conjunto, pagada en línea.</li>
+            <li>Copias de seguridad automáticas: la base de datos todos los días y las fotos cada semana.</li>
+            <li>Tus datos se tratan según nuestra política de datos personales.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Planes (resumen) -->
+  <section id="precios" class="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50">
+    <div class="max-w-4xl mx-auto">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">Planes y precios</h2>
+        <p class="text-gray-600">Precios en pesos colombianos (COP) por conjunto residencial.</p>
+      </div>
+      <div class="grid md:grid-cols-2 gap-8">
+        <div class="bg-white rounded-2xl border border-gray-200 p-8 text-center">
+          <p class="text-sm font-semibold text-comunify-blue mb-2">Prueba gratuita</p>
+          <p class="text-4xl font-bold mb-1">$0</p>
+          <p class="text-sm text-gray-500 mb-6">durante 7 días, sin tarjeta</p>
+          <p class="text-sm text-gray-600 mb-6">Usa la plataforma completa. Al terminar, tú decides si te suscribes.</p>
+          <a href="planes.html#prueba" class="block bg-comunify-blue hover:bg-comunify-blue-dark text-white py-3 rounded-xl font-semibold text-sm transition-colors">Probar 7 días gratis</a>
+        </div>
+        <div class="bg-white rounded-2xl border-2 border-comunify-blue p-8 text-center">
+          <p class="text-sm font-semibold text-comunify-blue mb-2">Suscripción mensual</p>
+          <p class="text-4xl font-bold mb-1">$450.000</p>
+          <p class="text-sm text-gray-500 mb-6">por mes</p>
+          <p class="text-sm text-gray-600 mb-6">Más una cuota de instalación única de <strong>$2.000.000</strong> para conjuntos nuevos: instalación, códigos QR y capacitación.</p>
+          <a href="planes.html" class="block border border-comunify-blue text-comunify-blue hover:bg-comunify-blue/5 py-3 rounded-xl font-semibold text-sm transition-colors">Ver planes y pagar</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Preguntas frecuentes -->
+  <section id="faq" class="py-20 px-4 sm:px-6 lg:px-8 bg-white">
+    <div class="max-w-3xl mx-auto">
+      <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 text-center mb-10">Preguntas frecuentes</h2>
+      <div class="space-y-3">
+        <details class="bg-gray-50 rounded-xl p-5 group"><summary class="font-semibold cursor-pointer">¿Cómo se paga?</summary><p class="text-gray-600 text-sm mt-3">En línea, desde la página de planes, con PSE, tarjeta, Nequi u otros medios que ofrece la pasarela de pagos Wompi. Comunify no guarda datos de tarjetas.</p></details>
+        <details class="bg-gray-50 rounded-xl p-5"><summary class="font-semibold cursor-pointer">¿Qué pasa cuando termina la prueba gratuita?</summary><p class="text-gray-600 text-sm mt-3">La plataforma se bloquea y te preguntamos si quieres suscribirte. Tus reportes anteriores se conservan.</p></details>
+        <details class="bg-gray-50 rounded-xl p-5"><summary class="font-semibold cursor-pointer">¿Los residentes necesitan crear una cuenta?</summary><p class="text-gray-600 text-sm mt-3">No. Reportan con el QR o el formulario y consultan su ticket con el número, sin registro.</p></details>
+        <details class="bg-gray-50 rounded-xl p-5"><summary class="font-semibold cursor-pointer">¿Qué pasa con los tickets resueltos?</summary><p class="text-gray-600 text-sm mt-3">El administrador los archiva: dejan de verse en el panel, pero no se borran y se pueden consultar con su número de ticket.</p></details>
+        <details class="bg-gray-50 rounded-xl p-5"><summary class="font-semibold cursor-pointer">¿Cada cuánto hacen copias de seguridad?</summary><p class="text-gray-600 text-sm mt-3">La base de datos se respalda todos los días y las fotos cada semana. Puedes ver los detalles en nuestra política de respaldo.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contacto -->
+  <section id="contacto" class="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50">
+    <div class="max-w-2xl mx-auto">
+      <div class="text-center mb-10">
+        <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">Regístrate y nosotros te contactamos</h2>
+        <p class="text-gray-600">Déjanos los datos de tu conjunto y te escribimos para explicarte cómo empezar.</p>
+      </div>
+      <div id="contacto-card" class="bg-white rounded-2xl border border-gray-200 p-6 sm:p-8">
+        <div class="space-y-4">
+          <div>
+            <label for="c-conjunto" class="block text-sm font-semibold text-gray-700 mb-1">Nombre del conjunto</label>
+            <input id="c-conjunto" maxlength="120" class="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-comunify-blue focus:border-transparent" placeholder="Ej: Conjunto Residencial Los Pinos">
+          </div>
+          <div class="grid sm:grid-cols-2 gap-4">
+            <div>
+              <label for="c-contacto" class="block text-sm font-semibold text-gray-700 mb-1">Tu nombre</label>
+              <input id="c-contacto" maxlength="100" class="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-comunify-blue focus:border-transparent" placeholder="Administrador(a)">
+            </div>
+            <div>
+              <label for="c-telefono" class="block text-sm font-semibold text-gray-700 mb-1">Teléfono <span class="text-gray-400 text-xs font-normal">(opcional)</span></label>
+              <input id="c-telefono" type="tel" maxlength="20" class="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-comunify-blue focus:border-transparent" placeholder="3001234567">
+            </div>
+          </div>
+          <div>
+            <label for="c-email" class="block text-sm font-semibold text-gray-700 mb-1">Correo electrónico</label>
+            <input id="c-email" type="email" maxlength="120" class="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-comunify-blue focus:border-transparent" placeholder="admin@conjunto.com">
+          </div>
+          <div>
+            <label for="c-mensaje" class="block text-sm font-semibold text-gray-700 mb-1">Mensaje <span class="text-gray-400 text-xs font-normal">(opcional)</span></label>
+            <textarea id="c-mensaje" rows="3" maxlength="500" class="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-comunify-blue focus:border-transparent resize-none" placeholder="Cuéntanos cuántas torres tiene tu conjunto o qué necesitas"></textarea>
+          </div>
+          <!-- Campo trampa para bots: las personas no lo ven -->
+          <input id="c-web" type="text" tabindex="-1" autocomplete="off" class="hidden" aria-hidden="true">
+          <label class="flex items-start gap-2 text-sm text-gray-600">
+            <input id="c-acepto" type="checkbox" class="mt-1">
+            <span>Acepto que me contacten y el tratamiento de mis datos según la <a href="politica-datos-personales.html" class="text-comunify-blue underline">Política de datos personales</a>.</span>
+          </label>
+          <div id="c-error" class="hidden bg-red-50 border border-red-200 rounded-xl p-3 text-sm text-red-700"></div>
+          <button id="c-enviar" type="button" class="w-full bg-comunify-blue hover:bg-comunify-blue-dark text-white py-3.5 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2">
+            <i data-lucide="send" class="w-5 h-5"></i> Enviar solicitud
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- CTA -->
   <section class="py-20 px-4 sm:px-6 lg:px-8">
     <div class="max-w-4xl mx-auto bg-comunify-blue rounded-3xl p-12 text-center text-white">
@@ -235,5 +366,48 @@
 
   <script type="module" src="/js/legal-ui.js"></script>
   <script>lucide.createIcons()</script>
+  <script type="module">
+    import { enviarSolicitud } from './js/contacto.js'
+
+    const $ = (id) => document.getElementById(id)
+    const mostrarError = (m) => { $('c-error').textContent = m; $('c-error').classList.remove('hidden') }
+
+    $('c-enviar').addEventListener('click', async () => {
+      $('c-error').classList.add('hidden')
+      if ($('c-web').value) return // un bot rellenó el campo trampa
+
+      const d = {
+        conjunto: $('c-conjunto').value.trim(),
+        contacto: $('c-contacto').value.trim(),
+        email: $('c-email').value.trim(),
+        telefono: $('c-telefono').value.trim(),
+        mensaje: $('c-mensaje').value.trim(),
+      }
+      if (d.conjunto.length < 3) return mostrarError('Escribe el nombre del conjunto.')
+      if (d.contacto.length < 3) return mostrarError('Escribe tu nombre.')
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(d.email)) return mostrarError('Escribe un correo válido.')
+      if (!$('c-acepto').checked) return mostrarError('Debes aceptar la política de datos personales para continuar.')
+
+      const btn = $('c-enviar')
+      btn.disabled = true
+      btn.innerHTML = '<div class="spinner"></div> Enviando...'
+      try {
+        const r = await enviarSolicitud(d)
+        const safe = d.email.replace(/[&<>"']/g, '')
+        $('contacto-card').innerHTML = `
+          <div class="text-center py-8">
+            <div class="w-14 h-14 rounded-full bg-green-100 text-green-600 mx-auto mb-4 flex items-center justify-center text-2xl">✓</div>
+            <h3 class="text-xl font-bold mb-2">¡Solicitud enviada!</h3>
+            <p class="text-gray-600 text-sm">Te contactaremos pronto al correo <strong>${safe}</strong>.${r.correo ? ' Ya avisamos a nuestro equipo.' : ''}</p>
+            <a href="planes.html#prueba" class="inline-block mt-6 bg-comunify-blue hover:bg-comunify-blue-dark text-white px-6 py-3 rounded-xl font-semibold text-sm">Mientras tanto, probar 7 días gratis</a>
+          </div>`
+      } catch (err) {
+        mostrarError(err.message)
+        btn.disabled = false
+        btn.innerHTML = '<i data-lucide="send" class="w-5 h-5"></i> Enviar solicitud'
+        lucide.createIcons()
+      }
+    })
+  </script>
 </body>
 </html>

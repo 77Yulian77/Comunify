@@ -1,0 +1,99 @@
+# Copias de respaldo automáticas de Comunify (política: project/politica-respaldo.html)
+#   - Base de datos: todos los días 2:00 a. m. hora Colombia (07:00 UTC), conservada 30 días.
+#   - Fotos de evidencia: cada domingo 3:00 a. m. hora Colombia (08:00 UTC), conservada 60 días.
+#   - Las copias se cifran con AES-256 antes de guardarse.
+#   - El historial de ejecuciones de este flujo es el REGISTRO de copias (fecha, resultado).
+#
+# Secretos necesarios (GitHub > Settings > Secrets and variables > Actions):
+#   SUPABASE_DB_URL          cadena de conexión "Session pooler" de Supabase (Project Settings > Database)
+#   SUPABASE_URL             https://xxxx.supabase.co
+#   SUPABASE_SERVICE_ROLE_KEY  llave service_role (solo para las fotos; NUNCA en el frontend)
+#   BACKUP_PASSPHRASE        contraseña larga para cifrar las copias (guárdala en un lugar seguro)
+
+name: Backups Comunify
+
+on:
+  schedule:
+    - cron: '0 7 * * *'
+    - cron: '0 8 * * 0'
+  workflow_dispatch:
+    inputs:
+      que:
+        description: 'Qué respaldar'
+        type: choice
+        options: [base-de-datos, fotos, ambos]
+        default: ambos
+
+jobs:
+  base-de-datos:
+    if: >
+      github.event_name == 'schedule' && github.event.schedule == '0 7 * * *' ||
+      github.event_name == 'workflow_dispatch' && inputs.que != 'fotos'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Exportar base de datos (pg_dump)
+        env:
+          DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          docker run --rm postgres:17 pg_dump "$DB_URL" \
+            --no-owner --no-privileges --schema=public --schema=auth \
+            | gzip > comunify-db-$(date -u +%Y%m%d-%H%M).sql.gz
+          ls -lh *.sql.gz
+
+      - name: Cifrar copia
+        env:
+          PASS: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: |
+          for f in *.sql.gz; do
+            gpg --batch --yes --symmetric --cipher-algo AES256 --passphrase "$PASS" "$f"
+            rm "$f"
+          done
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: backup-bd-${{ github.run_id }}
+          path: '*.gpg'
+          retention-days: 30
+          if-no-files-found: error
+
+      - name: Registro
+        run: echo "Copia de base de datos OK - $(date -u +'%Y-%m-%d %H:%M UTC') - ejecución ${{ github.run_id }}" >> "$GITHUB_STEP_SUMMARY"
+
+  fotos:
+    if: >
+      github.event_name == 'schedule' && github.event.schedule == '0 8 * * 0' ||
+      github.event_name == 'workflow_dispatch' && inputs.que != 'base-de-datos'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Descargar fotos del bucket
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          mkdir -p /tmp/fotos-tool && cd /tmp/fotos-tool && npm init -y >/dev/null && npm i @supabase/supabase-js >/dev/null
+          cp "$GITHUB_WORKSPACE/scripts/backup-fotos.mjs" .
+          node backup-fotos.mjs "$GITHUB_WORKSPACE/backup-fotos"
+          tar czf comunify-fotos-$(date -u +%Y%m%d).tar.gz -C "$GITHUB_WORKSPACE" backup-fotos
+          mv comunify-fotos-*.tar.gz "$GITHUB_WORKSPACE/"
+
+      - name: Cifrar copia
+        env:
+          PASS: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: |
+          gpg --batch --yes --symmetric --cipher-algo AES256 --passphrase "$PASS" comunify-fotos-*.tar.gz
+          rm comunify-fotos-*.tar.gz
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: backup-fotos-${{ github.run_id }}
+          path: '*.gpg'
+          retention-days: 60
+          if-no-files-found: error
+
+      - name: Registro
+        run: echo "Copia de fotos OK - $(date -u +'%Y-%m-%d %H:%M UTC') - ejecución ${{ github.run_id }}" >> "$GITHUB_STEP_SUMMARY"

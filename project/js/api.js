@@ -60,6 +60,8 @@ export async function getAllIncidencias(filters = {}) {
   if (filters.estado && filters.estado !== 'all') {
     query = query.eq('estado', filters.estado)
   }
+  // El panel muestra los tickets activos; los archivados se ven en su pestaña
+  query = query.eq('archivada', filters.archivadas === true)
 
   const { data, error } = await query
   if (error) throw new Error(error.message)
@@ -78,52 +80,35 @@ export async function updateIncidenciaEstado(ticketNumber, nuevoEstado) {
   return data
 }
 
-// Saca la ruta del archivo dentro del bucket a partir de la URL pública de la foto
-function getFotoPath(fotoUrl) {
-  if (!fotoUrl) return null
-  const marker = `/${STORAGE_BUCKET}/`
-  const idx = fotoUrl.indexOf(marker)
-  if (idx === -1) return null
-  const path = fotoUrl.slice(idx + marker.length).split('?')[0]
-  try {
-    return decodeURIComponent(path) || null
-  } catch {
-    return path || null
-  }
-}
-
-// Elimina tickets que estén en estado "Resuelto" (y sus fotos). Devuelve cuántos se eliminaron.
-export async function deleteIncidenciasResueltas(incidencias) {
+// Archiva tickets "Resuelto": salen del panel pero se conservan y se pueden consultar por su número.
+export async function archiveIncidencias(incidencias) {
   const resueltas = (incidencias || []).filter((i) => i && i.estado === 'Resuelto')
-  if (resueltas.length === 0) throw new Error('No hay tickets resueltos para eliminar')
+  if (resueltas.length === 0) throw new Error('No hay tickets resueltos para archivar')
 
-  const tickets = resueltas.map((i) => i.ticket_number)
   const { data, error } = await supabase
     .from('incidencias')
-    .delete()
-    .in('ticket_number', tickets)
+    .update({ archivada: true, archivada_at: new Date().toISOString() })
+    .in('ticket_number', resueltas.map((i) => i.ticket_number))
     .eq('estado', 'Resuelto')
     .select('ticket_number')
 
   if (error) throw new Error(error.message)
   if (!data || data.length === 0) {
-    throw new Error('No se eliminó nada. Revisa que el ticket siga en estado Resuelto y vuelve a iniciar sesión.')
+    throw new Error('No se archivó nada. Revisa que el ticket siga en estado Resuelto y vuelve a iniciar sesión.')
   }
+  return data.length
+}
 
-  // Borra también las fotos de los tickets que sí se eliminaron (si falla, el ticket ya quedó eliminado)
-  const borrados = new Set(data.map((d) => d.ticket_number))
-  const paths = resueltas
-    .filter((i) => borrados.has(i.ticket_number))
-    .map((i) => getFotoPath(i.foto_url))
-    .filter(Boolean)
-  if (paths.length > 0) {
-    try {
-      await supabase.storage.from(STORAGE_BUCKET).remove(paths)
-    } catch (err) {
-      console.warn('No se pudieron borrar algunas fotos:', err)
-    }
-  }
+// Devuelve un ticket archivado al panel
+export async function restoreIncidencia(ticketNumber) {
+  const { data, error } = await supabase
+    .from('incidencias')
+    .update({ archivada: false, archivada_at: null })
+    .eq('ticket_number', ticketNumber)
+    .select('ticket_number')
 
+  if (error) throw new Error(error.message)
+  if (!data || data.length === 0) throw new Error('No se pudo restaurar el ticket')
   return data.length
 }
 
@@ -149,32 +134,24 @@ export async function uploadFoto(file, ticketNumber) {
 }
 
 export async function getIncidenciaStats() {
-  const { count: total, error: errTotal } = await supabase
-    .from('incidencias')
-    .select('*', { count: 'exact', head: true })
+  const contar = (estado, archivada = false) => {
+    let q = supabase.from('incidencias').select('*', { count: 'exact', head: true }).eq('archivada', archivada)
+    if (estado) q = q.eq('estado', estado)
+    return q
+  }
 
-  const { count: pendientes, error: errP } = await supabase
-    .from('incidencias')
-    .select('*', { count: 'exact', head: true })
-    .eq('estado', 'Pendiente')
+  const [t, p, ep, r, a] = await Promise.all([
+    contar(null), contar('Pendiente'), contar('En Proceso'), contar('Resuelto'), contar(null, true),
+  ])
 
-  const { count: enProceso, error: errEP } = await supabase
-    .from('incidencias')
-    .select('*', { count: 'exact', head: true })
-    .eq('estado', 'En Proceso')
-
-  const { count: resueltos, error: errR } = await supabase
-    .from('incidencias')
-    .select('*', { count: 'exact', head: true })
-    .eq('estado', 'Resuelto')
-
-  if (errTotal || errP || errEP || errR) throw new Error('Error al obtener estadísticas')
+  if (t.error || p.error || ep.error || r.error || a.error) throw new Error('Error al obtener estadísticas')
 
   return {
-    total: total || 0,
-    pendientes: pendientes || 0,
-    enProceso: enProceso || 0,
-    resueltos: resueltos || 0,
+    total: t.count || 0,
+    pendientes: p.count || 0,
+    enProceso: ep.count || 0,
+    resueltos: r.count || 0,
+    archivados: a.count || 0,
   }
 }
 
