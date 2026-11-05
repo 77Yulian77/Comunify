@@ -29,13 +29,13 @@
         </div>
         <div class="flex items-center gap-4">
           <span id="admin-email" class="text-sm text-gray-500 hidden sm:inline"></span>
-          <a href="solicitudes.html"
-            class="text-gray-600 hover:text-comunify-blue text-sm font-medium transition-colors flex items-center gap-1.5">
+          <a href="solicitudes.html" data-solo-admin
+            class="hidden text-gray-600 hover:text-comunify-blue text-sm font-medium transition-colors flex items-center gap-1.5">
             <i data-lucide="mail" class="w-4 h-4"></i>
             <span class="hidden sm:inline">Solicitudes</span>
           </a>
-          <a href="qr-generator.html"
-            class="text-gray-600 hover:text-comunify-blue text-sm font-medium transition-colors flex items-center gap-1.5">
+          <a href="qr-generator.html" data-solo-admin
+            class="hidden text-gray-600 hover:text-comunify-blue text-sm font-medium transition-colors flex items-center gap-1.5">
             <i data-lucide="qr-code" class="w-4 h-4"></i>
             <span class="hidden sm:inline">Generar QR</span>
           </a>
@@ -418,7 +418,7 @@
   </script>
   <script type="module">
     import { getAllIncidencias, updateIncidenciaEstado, archiveIncidencias, deleteIncidencias, resolveIncidencia, restoreIncidencia, getIncidenciaStats, ZONA_LABELS, ESTADO_COLORS } from './js/api.js'
-    import { getAdminSession, adminLogout } from './js/auth.js'
+    import { getAdminSession, adminLogout, esSuperAdmin } from './js/auth.js'
     import { buildReportUrl } from './js/qr-reader.js'
     import QRCode from 'qrcode'
 
@@ -436,6 +436,16 @@
 
     const logoutBtn = document.getElementById('logout-btn')
     if (logoutBtn) logoutBtn.addEventListener('click', adminLogout)
+
+    // Solicitudes y Generar QR solo para el administrador de Comunify
+    let puedeQR = false
+    esSuperAdmin().then((ok) => {
+      puedeQR = ok
+      document.querySelectorAll('[data-solo-admin]').forEach(a => {
+        a.classList.toggle('hidden', !ok)
+        a.classList.toggle('flex', ok)
+      })
+    })
 
     let allIncidencias = []
     let verArchivados = false
@@ -915,7 +925,7 @@
     if (qrLink) {
       qrLink.addEventListener('click', (e) => {
         e.preventDefault()
-        openQrModal()
+        if (puedeQR) openQrModal()
       })
     }
 

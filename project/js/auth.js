@@ -49,6 +49,17 @@ export function requireAuth() {
   return true
 }
 
+// Rol de la cuenta (viene de app_metadata en Supabase, no lo puede cambiar el usuario).
+// 'admin' = administrador de Comunify (solicitudes y generar QR). Cualquier otro = cuenta de conjunto.
+export async function getRol() {
+  const { data } = await supabase.auth.getSession()
+  return data?.session?.user?.app_metadata?.role || null
+}
+
+export async function esSuperAdmin() {
+  return (await getRol()) === 'admin'
+}
+
 export async function getCurrentSession() {
   const { data } = await supabase.auth.getSession()
   return data.session
