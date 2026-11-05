@@ -113,7 +113,7 @@
   <script type="module">
     import { buildReportUrl } from './js/qr-reader.js'
     import { ZONA_LABELS } from './js/api.js'
-    import { getAdminSession } from './js/auth.js'
+    import { getAdminSession, esSuperAdmin } from './js/auth.js'
     import QRCode from 'qrcode'
 
     lucide.createIcons()
@@ -122,6 +122,7 @@
     if (!getAdminSession()) {
       window.location.href = 'login.html'
     }
+    esSuperAdmin().then((ok) => { if (!ok) window.location.href = 'dashboard.html' })
 
     async function generateQR() {
       const torre = document.getElementById('qr-torre').value

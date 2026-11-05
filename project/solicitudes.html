@@ -48,10 +48,11 @@
 
   <script type="module">
     import { supabase } from './js/api.js'
-    import { getAdminSession } from './js/auth.js'
+    import { getAdminSession, esSuperAdmin } from './js/auth.js'
     lucide.createIcons()
 
     if (!getAdminSession()) location.href = 'login.html'
+    esSuperAdmin().then((ok) => { if (!ok) location.href = 'dashboard.html' })
 
     const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]))
 
