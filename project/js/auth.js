@@ -12,7 +12,7 @@ export async function adminLogin(email, password) {
 export async function adminLogout() {
   await supabase.auth.signOut()
   localStorage.removeItem('comunify_admin_session')
-  window.location.href = 'index.html'
+  window.location.href = 'login.html'
 }
 
 export function getAdminSession() {

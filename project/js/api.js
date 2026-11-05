@@ -37,7 +37,7 @@ export async function createIncidencia(data) {
 export async function getIncidenciaByTicket(ticketNumber) {
   const { data, error } = await supabase
     .from('incidencias')
-    .select('ticket_number, descripcion, torre, piso, zona, foto_url, estado, created_at')
+    .select('ticket_number, descripcion, torre, piso, zona, foto_url, estado, created_at, resolucion_comentario, resolucion_foto_url, resuelta_at')
     .eq('ticket_number', ticketNumber)
     .maybeSingle()
 
@@ -48,7 +48,7 @@ export async function getIncidenciaByTicket(ticketNumber) {
 export async function getAllIncidencias(filters = {}) {
   let query = supabase
     .from('incidencias')
-    .select('ticket_number, torre, piso, zona, estado, created_at, descripcion, foto_url')
+    .select('ticket_number, torre, piso, zona, estado, created_at, descripcion, foto_url, resolucion_foto_url')
     .order('created_at', { ascending: false })
 
   if (filters.torre && filters.torre !== 'all') {
@@ -69,9 +69,40 @@ export async function getAllIncidencias(filters = {}) {
 }
 
 export async function updateIncidenciaEstado(ticketNumber, nuevoEstado) {
+  // Si deja de estar Resuelto, se limpia la solución anterior
+  const cambios = nuevoEstado === 'Resuelto'
+    ? { estado: nuevoEstado }
+    : { estado: nuevoEstado, resolucion_comentario: null, resolucion_foto_url: null, resuelta_at: null }
   const { data, error } = await supabase
     .from('incidencias')
-    .update({ estado: nuevoEstado })
+    .update(cambios)
+    .eq('ticket_number', ticketNumber)
+    .select('ticket_number, estado')
+    .single()
+
+  if (error) throw new Error(error.message)
+  return data
+}
+
+// Marca un ticket como Resuelto dejando comentario y foto de cómo quedó
+export async function resolveIncidencia(ticketNumber, comentario, file) {
+  const texto = (comentario || '').trim()
+  if (texto.length < 5) throw new Error('Escribe un comentario de al menos 5 caracteres')
+  if (texto.length > 500) throw new Error('El comentario no puede superar 500 caracteres')
+  if (!file) throw new Error('La foto de la solución es obligatoria')
+  if (!file.type.startsWith('image/')) throw new Error('El archivo debe ser una imagen')
+  if (file.size > 10 * 1024 * 1024) throw new Error('La foto no puede superar 10 MB')
+
+  const fotoUrl = await uploadFoto(file, `${ticketNumber}-resuelto-${Date.now()}`)
+
+  const { data, error } = await supabase
+    .from('incidencias')
+    .update({
+      estado: 'Resuelto',
+      resolucion_comentario: texto,
+      resolucion_foto_url: fotoUrl,
+      resuelta_at: new Date().toISOString(),
+    })
     .eq('ticket_number', ticketNumber)
     .select('ticket_number, estado')
     .single()
@@ -110,6 +141,51 @@ export async function restoreIncidencia(ticketNumber) {
   if (error) throw new Error(error.message)
   if (!data || data.length === 0) throw new Error('No se pudo restaurar el ticket')
   return data.length
+}
+
+// Elimina tickets. Con respaldo=true se guarda una copia (incidencias_respaldo) y se conservan las fotos;
+// con respaldo=false se borran DEFINITIVAMENTE el ticket y sus fotos.
+export async function deleteIncidencias(incidencias, { respaldo = false } = {}) {
+  const lista = (incidencias || []).filter((i) => i && i.ticket_number)
+  if (lista.length === 0) throw new Error('No hay tickets para eliminar')
+  const tickets = lista.map((i) => i.ticket_number)
+
+  if (respaldo) {
+    const { data, error } = await supabase.rpc('eliminar_con_respaldo', { p_tickets: tickets })
+    if (error) throw new Error(error.message)
+    if (!data) throw new Error('No se eliminó nada. Ejecuta el SQL EJECUTAR_EN_SUPABASE.sql e inicia sesión de nuevo.')
+    return data
+  }
+
+  const { data, error } = await supabase
+    .from('incidencias')
+    .delete()
+    .in('ticket_number', tickets)
+    .select('ticket_number')
+
+  if (error) throw new Error(error.message)
+  if (!data || data.length === 0) {
+    throw new Error('No se eliminó nada. Ejecuta el SQL EJECUTAR_EN_SUPABASE.sql e inicia sesión de nuevo.')
+  }
+
+  const borrados = new Set(data.map((d) => d.ticket_number))
+  const rutas = lista
+    .filter((i) => borrados.has(i.ticket_number))
+    .flatMap((i) => [rutaFoto(i.foto_url), rutaFoto(i.resolucion_foto_url)])
+    .filter(Boolean)
+  if (rutas.length > 0) {
+    const { error: errFoto } = await supabase.storage.from(STORAGE_BUCKET).remove(rutas)
+    if (errFoto) console.warn('Tickets eliminados, pero no se pudieron borrar algunas fotos:', errFoto.message)
+  }
+  return data.length
+}
+
+function rutaFoto(url) {
+  if (!url) return null
+  const marca = `/${STORAGE_BUCKET}/`
+  const i = url.indexOf(marca)
+  if (i === -1) return null
+  return decodeURIComponent(url.slice(i + marca.length).split('?')[0])
 }
 
 export async function uploadFoto(file, ticketNumber) {

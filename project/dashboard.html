@@ -152,19 +152,35 @@
     </div>
     <p id="archivados-info" class="hidden text-sm text-gray-500 mb-3">Estos tickets están archivados: no aparecen en el panel de activos, pero siguen disponibles en «Consultar ticket» con su número.</p>
 
+    <div id="acciones-leyenda" class="flex flex-wrap gap-x-5 gap-y-1 text-xs text-gray-500 mb-3">
+      <span class="font-semibold text-gray-600">Qué hace cada botón:</span>
+      <span><b class="text-comunify-blue">Ver</b> abre el detalle</span>
+      <span><b class="text-amber-600">Estado</b> cambia Pendiente / En proceso / Resuelto</span>
+      <span><b class="text-comunify-blue">Archivar</b> lo saca del panel sin borrarlo</span>
+      <span><b class="text-red-600">Eliminar</b> lo borra (con copia de respaldo o para siempre)</span>
+    </div>
+
     <div class="bg-white rounded-xl card-shadow overflow-hidden">
-      <div id="bulk-bar" class="hidden px-4 py-3 border-b border-gray-100 bg-gray-50 items-center justify-between gap-3">
-        <p class="text-sm text-gray-600"><span id="bulk-count" class="font-semibold">0</span> ticket(s) resuelto(s) en la lista</p>
-        <button id="bulk-archive-btn"
-          class="border border-comunify-blue/40 hover:bg-comunify-blue/5 text-comunify-blue px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-2">
-          <i data-lucide="archive" class="w-4 h-4"></i>
-          Archivar resueltos
-        </button>
+      <div id="bulk-bar" class="px-4 py-3 border-b border-gray-100 bg-gray-50 flex flex-wrap items-center justify-between gap-3">
+        <p class="text-sm text-gray-600"><span id="sel-count" class="font-semibold">0</span> seleccionado(s) · <span id="bulk-count" class="font-semibold">0</span> resuelto(s) en la lista</p>
+        <div class="flex flex-wrap gap-2">
+          <button id="bulk-archive-btn"
+            class="border border-comunify-blue/40 hover:bg-comunify-blue/5 text-comunify-blue px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-2">
+            <i data-lucide="archive" class="w-4 h-4"></i>
+            <span id="bulk-archive-label">Archivar resueltos</span>
+          </button>
+          <button id="bulk-delete-btn" disabled
+            class="border border-red-300 hover:bg-red-50 text-red-600 disabled:opacity-40 disabled:cursor-not-allowed px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-2">
+            <i data-lucide="trash-2" class="w-4 h-4"></i>
+            Eliminar seleccionados
+          </button>
+        </div>
       </div>
       <div class="table-wrapper">
         <table class="w-full text-sm">
           <thead>
             <tr class="bg-gray-50 border-b border-gray-200 text-left">
+              <th class="px-4 py-3 w-10"><input id="select-all" type="checkbox" class="w-4 h-4 rounded border-gray-300 accent-teal-600" title="Seleccionar todos los de la lista" aria-label="Seleccionar todos"></th>
               <th class="px-4 py-3 font-semibold text-gray-600 text-xs uppercase tracking-wide">Ticket</th>
               <th class="px-4 py-3 font-semibold text-gray-600 text-xs uppercase tracking-wide">Foto</th>
               <th class="px-4 py-3 font-semibold text-gray-600 text-xs uppercase tracking-wide">Torre</th>
@@ -177,7 +193,7 @@
           </thead>
           <tbody id="incidencias-tbody">
             <tr>
-              <td colspan="8" class="px-4 py-12 text-center text-gray-400">
+              <td colspan="9" class="px-4 py-12 text-center text-gray-400">
                 <div class="flex flex-col items-center gap-3">
                   <div class="spinner"></div>
                   <p class="text-sm">Cargando incidencias...</p>
@@ -242,6 +258,66 @@
           class="flex-1 border border-gray-300 hover:bg-gray-50 text-gray-700 py-3 rounded-xl font-medium transition-all text-sm">Cancelar</button>
         <button id="confirm-archive"
           class="flex-1 bg-comunify-blue hover:bg-comunify-blue-dark disabled:opacity-60 text-white py-3 rounded-xl font-semibold transition-all text-sm">Sí, archivar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="resolve-modal" class="fixed inset-0 z-50 hidden items-center justify-center modal-backdrop p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 animate-fade-in-up max-h-[95vh] overflow-y-auto">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
+          <i data-lucide="check-circle" class="w-5 h-5 text-green-600"></i>
+        </div>
+        <div>
+          <h3 class="text-lg font-bold text-gray-900">Marcar como resuelto</h3>
+          <p class="text-sm text-gray-500">Ticket: <span id="resolve-ticket" class="font-semibold text-comunify-blue"></span></p>
+        </div>
+      </div>
+      <label for="resolve-comment" class="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">¿Qué se hizo? (obligatorio)</label>
+      <textarea id="resolve-comment" rows="4" maxlength="500" placeholder="Ej: Se cambió la lámpara del pasillo y se verificó que enciende."
+        class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-comunify-blue focus:border-transparent mb-1"></textarea>
+      <p class="text-xs text-gray-400 mb-4 text-right"><span id="resolve-count">0</span>/500</p>
+      <label for="resolve-photo" class="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">Foto de cómo quedó (obligatoria)</label>
+      <input id="resolve-photo" type="file" accept="image/*"
+        class="w-full text-sm text-gray-600 border border-gray-300 rounded-lg p-2 mb-3">
+      <img id="resolve-preview" alt="Vista previa" class="hidden w-full max-h-48 object-contain rounded-xl border border-gray-200 bg-gray-50 mb-3">
+      <p id="resolve-error" class="hidden text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl p-3 mb-3"></p>
+      <div class="flex gap-3 mt-2">
+        <button id="cancel-resolve" type="button"
+          class="flex-1 border border-gray-300 hover:bg-gray-50 text-gray-700 py-3 rounded-xl font-medium transition-all text-sm">Cancelar</button>
+        <button id="confirm-resolve" type="button"
+          class="flex-1 bg-green-600 hover:bg-green-700 disabled:opacity-60 text-white py-3 rounded-xl font-semibold transition-all text-sm">Guardar y resolver</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="delete-modal" class="fixed inset-0 z-50 hidden items-center justify-center modal-backdrop p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 animate-fade-in-up">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center">
+          <i data-lucide="trash-2" class="w-5 h-5 text-red-600"></i>
+        </div>
+        <h3 id="delete-modal-title" class="text-lg font-bold text-gray-900">Eliminar ticket</h3>
+      </div>
+      <p id="delete-modal-text" class="text-sm text-gray-700 mb-2"></p>
+      <div class="space-y-2 mb-4">
+        <label class="flex gap-3 items-start border-2 border-comunify-blue rounded-xl p-3 cursor-pointer">
+          <input type="radio" name="delete-mode" value="respaldo" checked class="mt-1 accent-teal-600">
+          <span class="text-sm text-gray-700"><b>Eliminar y guardar copia (respaldo)</b><br>
+          Sale del panel, de «Archivados» y de «Consultar ticket». Se guarda una copia con sus fotos en la base de datos, solo visible desde Supabase, por si necesitas recuperarlo.</span>
+        </label>
+        <label class="flex gap-3 items-start border-2 border-gray-200 rounded-xl p-3 cursor-pointer">
+          <input type="radio" name="delete-mode" value="definitivo" class="mt-1 accent-red-600">
+          <span class="text-sm text-gray-700"><b class="text-red-700">Eliminar definitivamente</b><br>
+          Borra el ticket y sus fotos para siempre. <b>No se puede deshacer.</b></span>
+        </label>
+      </div>
+      <p class="text-xs text-gray-500 mb-6">Si solo quieres sacarlo del panel y poder verlo después en la app, usa «Archivar».</p>
+      <div class="flex gap-3">
+        <button id="cancel-delete"
+          class="flex-1 border border-gray-300 hover:bg-gray-50 text-gray-700 py-3 rounded-xl font-medium transition-all text-sm">Cancelar</button>
+        <button id="confirm-delete"
+          class="flex-1 bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white py-3 rounded-xl font-semibold transition-all text-sm">Eliminar</button>
       </div>
     </div>
   </div>
@@ -341,7 +417,7 @@
     protegerPagina()
   </script>
   <script type="module">
-    import { getAllIncidencias, updateIncidenciaEstado, archiveIncidencias, restoreIncidencia, getIncidenciaStats, ZONA_LABELS, ESTADO_COLORS } from './js/api.js'
+    import { getAllIncidencias, updateIncidenciaEstado, archiveIncidencias, deleteIncidencias, resolveIncidencia, restoreIncidencia, getIncidenciaStats, ZONA_LABELS, ESTADO_COLORS } from './js/api.js'
     import { getAdminSession, adminLogout } from './js/auth.js'
     import { buildReportUrl } from './js/qr-reader.js'
     import QRCode from 'qrcode'
@@ -364,6 +440,7 @@
     let allIncidencias = []
     let verArchivados = false
     let currentTicketForState = null
+    const seleccion = new Set()
 
     const ZONA_ICONS = {
       pasillo: 'door-open', parqueadero: 'car', ascensor: 'move-vertical',
@@ -377,6 +454,8 @@
           getIncidenciaStats(),
         ])
         allIncidencias = incidencias
+        const vigentes = new Set(incidencias.map(i => i.ticket_number))
+        for (const t of [...seleccion]) if (!vigentes.has(t)) seleccion.delete(t)
         renderTable(incidencias)
         renderStats(stats)
       } catch (err) {
@@ -416,11 +495,25 @@
     function updateBulkBar(incidencias) {
       const bar = document.getElementById('bulk-bar')
       if (!bar) return
-      const count = verArchivados ? 0 : incidencias.filter(i => i.estado === 'Resuelto').length
-      document.getElementById('bulk-count').textContent = count
-      bar.classList.toggle('hidden', count === 0)
-      bar.classList.toggle('flex', count > 0)
+      const resueltos = incidencias.filter(i => i.estado === 'Resuelto').length
+      const selResueltos = incidencias.filter(i => seleccion.has(i.ticket_number) && i.estado === 'Resuelto').length
+      document.getElementById('bulk-count').textContent = verArchivados ? 0 : resueltos
+      document.getElementById('sel-count').textContent = seleccion.size
+      bar.classList.toggle('hidden', incidencias.length === 0)
+      const arch = document.getElementById('bulk-archive-btn')
+      arch.classList.toggle('hidden', verArchivados || (resueltos === 0))
+      arch.classList.toggle('flex', !verArchivados && resueltos > 0)
+      document.getElementById('bulk-archive-label').textContent =
+        selResueltos > 0 ? `Archivar seleccionados resueltos (${selResueltos})` : 'Archivar resueltos'
+      document.getElementById('bulk-delete-btn').disabled = seleccion.size === 0
+      const all = document.getElementById('select-all')
+      if (all) {
+        all.checked = incidencias.length > 0 && seleccion.size === incidencias.length
+        all.indeterminate = seleccion.size > 0 && seleccion.size < incidencias.length
+      }
     }
+
+    const BTN = 'inline-flex items-center gap-1 px-2.5 py-1.5 border rounded-lg text-xs font-semibold transition-all'
 
     function renderTable(incidencias) {
       const tbody = document.getElementById('incidencias-tbody')
@@ -429,7 +522,7 @@
 
       if (incidencias.length === 0) {
         tbody.innerHTML = `
-          <tr><td colspan="8" class="px-4 py-12 text-center text-gray-400">
+          <tr><td colspan="9" class="px-4 py-12 text-center text-gray-400">
             <div class="flex flex-col items-center gap-2">
               <i data-lucide="inbox" class="w-8 h-8 text-gray-300"></i>
               <p class="text-sm">${verArchivados ? 'No hay tickets archivados' : 'No hay incidencias que coincidan con los filtros'}</p>
@@ -451,6 +544,7 @@
 
         return `
           <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+            <td class="px-4 py-3"><input type="checkbox" class="row-check w-4 h-4 rounded border-gray-300 accent-teal-600" data-ticket="${inc.ticket_number}" ${seleccion.has(inc.ticket_number) ? 'checked' : ''} aria-label="Seleccionar ${inc.ticket_number}"></td>
             <td class="px-4 py-3 font-mono text-xs font-semibold text-comunify-blue">${inc.ticket_number}</td>
             <td class="px-4 py-3">
               ${safeFotoUrl(inc.foto_url) ? `
@@ -475,21 +569,24 @@
             </td>
             <td class="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">${formattedDate}</td>
             <td class="px-4 py-3 text-right">
-              <div class="flex items-center justify-end gap-1">
-                <button onclick="viewDetail('${inc.ticket_number}')" class="p-2 text-gray-400 hover:text-comunify-blue hover:bg-blue-50 rounded-lg transition-all" title="Ver detalle">
-                  <i data-lucide="eye" class="w-4 h-4"></i>
+              <div class="flex flex-wrap items-center justify-end gap-1.5">
+                <button onclick="viewDetail('${inc.ticket_number}')" class="${BTN} text-comunify-blue border-comunify-blue/30 hover:bg-comunify-blue/10" title="Ver el detalle del ticket">
+                  <i data-lucide="eye" class="w-4 h-4"></i><span>Ver</span>
                 </button>
                 ${verArchivados ? `
-                <button onclick="restoreTicket('${inc.ticket_number}')" class="p-2 text-gray-400 hover:text-comunify-blue hover:bg-comunify-blue/10 rounded-lg transition-all" title="Restaurar al panel">
-                  <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                <button onclick="restoreTicket('${inc.ticket_number}')" class="${BTN} text-green-700 border-green-300 hover:bg-green-50" title="Devolver el ticket al panel de activos">
+                  <i data-lucide="rotate-ccw" class="w-4 h-4"></i><span>Restaurar</span>
                 </button>` : `
-                <button onclick="openStateModal('${inc.ticket_number}')" class="p-2 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-all" title="Cambiar estado">
-                  <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                <button onclick="openStateModal('${inc.ticket_number}')" class="${BTN} text-amber-700 border-amber-300 hover:bg-amber-50" title="Cambiar el estado: Pendiente, En proceso o Resuelto">
+                  <i data-lucide="refresh-cw" class="w-4 h-4"></i><span>Estado</span>
                 </button>
                 ${inc.estado === 'Resuelto' ? `
-                <button onclick="askArchiveTicket('${inc.ticket_number}')" class="p-2 text-gray-400 hover:text-comunify-blue hover:bg-comunify-blue/10 rounded-lg transition-all" title="Archivar ticket resuelto">
-                  <i data-lucide="archive" class="w-4 h-4"></i>
+                <button onclick="askArchiveTicket('${inc.ticket_number}')" class="${BTN} text-comunify-blue border-comunify-blue/30 hover:bg-comunify-blue/10" title="Archivar: lo saca del panel pero no lo borra">
+                  <i data-lucide="archive" class="w-4 h-4"></i><span>Archivar</span>
                 </button>` : ''}`}
+                <button onclick="askDeleteTicket('${inc.ticket_number}')" class="${BTN} text-red-600 border-red-300 hover:bg-red-50" title="Eliminar: con copia de respaldo o definitivamente">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i><span>Eliminar</span>
+                </button>
               </div>
             </td>
           </tr>`
@@ -502,7 +599,7 @@
       const tbody = document.getElementById('incidencias-tbody')
       if (!tbody) return;
       tbody.innerHTML = `
-        <tr><td colspan="8" class="px-4 py-12 text-center text-red-500">
+        <tr><td colspan="9" class="px-4 py-12 text-center text-red-500">
           <div class="flex flex-col items-center gap-2">
             <i data-lucide="alert-triangle" class="w-8 h-8"></i>
             <p class="text-sm">${msg}</p>
@@ -586,7 +683,8 @@
     }
 
     document.getElementById('bulk-archive-btn').addEventListener('click', () => {
-      const resueltos = allIncidencias.filter(i => i.estado === 'Resuelto')
+      const selRes = allIncidencias.filter(i => seleccion.has(i.ticket_number) && i.estado === 'Resuelto')
+      const resueltos = selRes.length > 0 ? selRes : allIncidencias.filter(i => i.estado === 'Resuelto')
       if (resueltos.length > 0) openArchiveModal(resueltos, true)
     })
 
@@ -598,6 +696,125 @@
         alert('Error al restaurar: ' + err.message)
       }
     }
+
+    // ===== Selección y eliminación definitiva =====
+    document.getElementById('incidencias-tbody').addEventListener('change', (e) => {
+      if (!e.target.classList.contains('row-check')) return
+      const t = e.target.dataset.ticket
+      if (e.target.checked) seleccion.add(t); else seleccion.delete(t)
+      updateBulkBar(allIncidencias)
+    })
+    document.getElementById('select-all').addEventListener('change', (e) => {
+      seleccion.clear()
+      if (e.target.checked) allIncidencias.forEach(i => seleccion.add(i.ticket_number))
+      document.querySelectorAll('.row-check').forEach(c => { c.checked = e.target.checked })
+      updateBulkBar(allIncidencias)
+    })
+
+    let pendingDelete = []
+    function openDeleteModal(lista) {
+      pendingDelete = lista
+      const uno = lista.length === 1
+      document.getElementById('delete-modal-title').textContent = uno ? 'Eliminar ticket' : 'Eliminar tickets seleccionados'
+      document.getElementById('delete-modal-text').textContent = uno
+        ? `¿Eliminar el ticket ${lista[0].ticket_number}? Elige cómo:`
+        : `¿Eliminar los ${lista.length} tickets seleccionados? Elige cómo:`
+      const modal = document.getElementById('delete-modal')
+      modal.classList.remove('hidden'); modal.classList.add('flex')
+    }
+    function closeDeleteModal() {
+      const modal = document.getElementById('delete-modal')
+      modal.classList.add('hidden'); modal.classList.remove('flex')
+      pendingDelete = []
+    }
+    window.askDeleteTicket = (ticket) => {
+      const inc = allIncidencias.find(i => i.ticket_number === ticket)
+      if (inc) openDeleteModal([inc])
+    }
+    document.getElementById('bulk-delete-btn').addEventListener('click', () => {
+      const lista = allIncidencias.filter(i => seleccion.has(i.ticket_number))
+      if (lista.length > 0) openDeleteModal(lista)
+    })
+    document.getElementById('cancel-delete').addEventListener('click', closeDeleteModal)
+    document.getElementById('delete-modal').addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) closeDeleteModal()
+    })
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeDeleteModal() })
+    document.getElementById('confirm-delete').addEventListener('click', async (e) => {
+      const btn = e.currentTarget
+      if (pendingDelete.length === 0) return
+      btn.disabled = true
+      btn.textContent = 'Eliminando...'
+      try {
+        const modo = document.querySelector('input[name="delete-mode"]:checked')?.value
+        await deleteIncidencias(pendingDelete, { respaldo: modo !== 'definitivo' })
+        pendingDelete.forEach(i => seleccion.delete(i.ticket_number))
+        closeDeleteModal()
+        await loadData()
+      } catch (err) {
+        alert('Error al eliminar: ' + err.message)
+      } finally {
+        btn.disabled = false
+        btn.textContent = 'Eliminar'
+      }
+    })
+
+    // ===== Resolver con comentario y foto =====
+    let resolveTicket = null
+    function openResolveModal(ticket) {
+      resolveTicket = ticket
+      document.getElementById('resolve-ticket').textContent = ticket
+      document.getElementById('resolve-comment').value = ''
+      document.getElementById('resolve-count').textContent = '0'
+      document.getElementById('resolve-photo').value = ''
+      document.getElementById('resolve-preview').classList.add('hidden')
+      document.getElementById('resolve-error').classList.add('hidden')
+      const m = document.getElementById('resolve-modal')
+      m.classList.remove('hidden'); m.classList.add('flex')
+    }
+    function closeResolveModal() {
+      const m = document.getElementById('resolve-modal')
+      m.classList.add('hidden'); m.classList.remove('flex')
+      resolveTicket = null
+    }
+    document.getElementById('resolve-comment').addEventListener('input', (e) => {
+      document.getElementById('resolve-count').textContent = e.target.value.length
+    })
+    document.getElementById('resolve-photo').addEventListener('change', (e) => {
+      const f = e.target.files[0]
+      const img = document.getElementById('resolve-preview')
+      if (f && f.type.startsWith('image/')) {
+        img.src = URL.createObjectURL(f)
+        img.classList.remove('hidden')
+      } else img.classList.add('hidden')
+    })
+    document.getElementById('cancel-resolve').addEventListener('click', closeResolveModal)
+    document.getElementById('resolve-modal').addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) closeResolveModal()
+    })
+    document.getElementById('confirm-resolve').addEventListener('click', async (e) => {
+      const btn = e.currentTarget
+      const errEl = document.getElementById('resolve-error')
+      errEl.classList.add('hidden')
+      if (!resolveTicket) return
+      btn.disabled = true
+      btn.textContent = 'Guardando...'
+      try {
+        await resolveIncidencia(
+          resolveTicket,
+          document.getElementById('resolve-comment').value,
+          document.getElementById('resolve-photo').files[0]
+        )
+        closeResolveModal()
+        await loadData()
+      } catch (err) {
+        errEl.textContent = err.message
+        errEl.classList.remove('hidden')
+      } finally {
+        btn.disabled = false
+        btn.textContent = 'Guardar y resolver'
+      }
+    })
 
     function pintarPestanas() {
       const on = 'px-4 py-2 rounded-lg text-sm font-semibold border bg-comunify-blue text-white border-comunify-blue'
@@ -663,6 +880,13 @@
       btn.addEventListener('click', async () => {
         const nuevoEstado = btn.dataset.estado
         if (!currentTicketForState) return
+
+        if (nuevoEstado === 'Resuelto') {
+          document.getElementById('state-modal').classList.add('hidden')
+          document.getElementById('state-modal').classList.remove('flex')
+          openResolveModal(currentTicketForState)
+          return
+        }
 
         try {
           await updateIncidenciaEstado(currentTicketForState, nuevoEstado)
