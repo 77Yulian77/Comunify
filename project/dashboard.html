@@ -482,9 +482,9 @@
         if (elRes) elRes.textContent = respaldo ? respaldoCount : '?'
         if (verRespaldo && !respaldo) throw new Error('No se pudo leer el respaldo. Ejecuta EJECUTAR_EN_SUPABASE.sql (migración 5) e inicia sesión de nuevo.')
         allIncidencias = verRespaldo ? respaldo : incidencias
-        const vigentes = new Set(incidencias.map(i => i.ticket_number))
+        const vigentes = new Set(allIncidencias.map(i => i.ticket_number))
         for (const t of [...seleccion]) if (!vigentes.has(t)) seleccion.delete(t)
-        renderTable(incidencias)
+        renderTable(allIncidencias)
         renderStats(stats)
       } catch (err) {
         console.error("Error cargando datos:", err)
