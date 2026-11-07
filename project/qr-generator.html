@@ -48,6 +48,12 @@
         <!-- Selectors -->
         <div class="grid grid-cols-3 gap-3 mb-6">
           <div>
+            <label class="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">Conjunto</label>
+            <select id="qr-conjunto" class="w-full px-3 py-3 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-comunify-blue focus:border-transparent">
+              <option value="comunify">Comunify</option>
+            </select>
+          </div>
+          <div>
             <label class="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">Torre</label>
             <select id="qr-torre" class="w-full px-3 py-3 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-comunify-blue focus:border-transparent">
               <option value="A">Torre A</option>
@@ -112,7 +118,7 @@
 
   <script type="module">
     import { buildReportUrl } from './js/qr-reader.js'
-    import { ZONA_LABELS } from './js/api.js'
+    import { ZONA_LABELS, getConjuntos } from './js/api.js'
     import { getAdminSession, esSuperAdmin } from './js/auth.js'
     import QRCode from 'qrcode'
 
@@ -128,7 +134,8 @@
       const torre = document.getElementById('qr-torre').value
       const piso = document.getElementById('qr-piso').value
       const zona = document.getElementById('qr-zona').value
-      const url = buildReportUrl(torre, piso, zona)
+      const conjunto = document.getElementById('qr-conjunto').value
+      const url = buildReportUrl(torre, piso, zona, conjunto)
       const canvas = document.getElementById('qr-canvas')
 
       await QRCode.toCanvas(canvas, url, {
@@ -138,7 +145,7 @@
       })
 
       const zonaLabel = ZONA_LABELS[zona] || zona
-      document.getElementById('qr-location-label').textContent = `Torre ${torre} - Piso ${piso} - ${zonaLabel}`
+      document.getElementById('qr-location-label').textContent = `${document.getElementById('qr-conjunto').selectedOptions[0]?.textContent || ''} - Torre ${torre} - Piso ${piso} - ${zonaLabel}`
       document.getElementById('qr-url').textContent = url
 
       canvas.toBlob((blob) => {
@@ -147,11 +154,18 @@
       }, 'image/png')
     }
 
-    ['qr-torre', 'qr-piso', 'qr-zona'].forEach(id => {
+    ['qr-conjunto', 'qr-torre', 'qr-piso', 'qr-zona'].forEach(id => {
       document.getElementById(id).addEventListener('change', generateQR)
     })
 
     generateQR()
+    // Lista real de conjuntos (si falla, queda Comunify)
+    getConjuntos().then((lista) => {
+      if (!lista.length) return
+      const sel = document.getElementById('qr-conjunto')
+      sel.innerHTML = lista.map((c) => `<option value="${c.slug}">${c.nombre}</option>`).join('')
+      generateQR()
+    }).catch(() => {})
   </script>
 </body>
 </html>

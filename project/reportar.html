@@ -249,7 +249,7 @@
   <script type="module" src="/js/legal-ui.js"></script>
 
   <script type="module">
-    import { createIncidencia, uploadFoto, sanitizeText } from './js/api.js'
+    import { createIncidencia, uploadFoto, sanitizeText, getConjuntos } from './js/api.js'
     import { validateIncidencia, validateImageFile, sanitizeInput } from './js/validators.js'
     import { getUrlParams } from './js/qr-reader.js'
     import { cameraSupported, openCameraModal, compressImage } from './js/camera.js'
@@ -279,6 +279,24 @@
         zonaSelect.value = params.zona
         zonaSelect.disabled = true
       }
+    }
+
+    // Nombre del conjunto del enlace/QR (solo informativo; el ticket queda en ese conjunto)
+    let conjuntoNombre = ''
+    if (params.conjunto) {
+      getConjuntos().then((lista) => {
+        const c = lista.find((x) => x.slug === params.conjunto)
+        const info = document.getElementById('prefill-info')
+        const notice = document.getElementById('prefill-notice')
+        if (c) {
+          conjuntoNombre = c.nombre
+          info.textContent = (info.textContent ? info.textContent + ' - ' : '') + c.nombre
+        } else {
+          info.textContent = (info.textContent ? info.textContent + ' - ' : '') + 'Conjunto no reconocido: el ticket irá al conjunto principal'
+          params.conjunto = ''
+        }
+        notice.classList.remove('hidden')
+      }).catch(() => {})
     }
 
     if (params.torre || params.piso || params.zona) {
@@ -434,6 +452,7 @@
           zona: data.zona,
           foto_url: fotoUrl,
           residente_nombre: data.residente_nombre || null,
+          conjunto: params.conjunto || undefined,
         })
 
         document.getElementById('form-card').classList.add('hidden')

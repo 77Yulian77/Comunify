@@ -23,6 +23,8 @@ export async function createIncidencia(data) {
     foto_url: data.foto_url,
     residente_nombre: data.residente_nombre || null,
   }
+  // Conjunto del enlace/QR; si no viene, la base lo deja en 'comunify'
+  if (data.conjunto) payload.conjunto = data.conjunto
 
   const { data: result, error } = await supabase
     .from('incidencias')
@@ -34,21 +36,33 @@ export async function createIncidencia(data) {
   return result
 }
 
+export async function getConjuntos() {
+  const { data, error } = await supabase.from('conjuntos').select('slug, nombre').order('nombre')
+  if (error) throw new Error(error.message)
+  return data || []
+}
+
 export async function getIncidenciaByTicket(ticketNumber) {
-  const { data, error } = await supabase
+  // consultar_ticket también encuentra los tickets eliminados con copia de respaldo,
+  // para que el residente siga viendo su ticket aunque ya no esté en el panel
+  const { data, error } = await supabase.rpc('consultar_ticket', { p_ticket: ticketNumber })
+  if (!error) return (data && data[0]) || null
+
+  // Si la función aún no existe en la base, se usa la consulta directa de antes
+  const { data: directo, error: errDirecto } = await supabase
     .from('incidencias')
     .select('ticket_number, descripcion, torre, piso, zona, foto_url, estado, created_at, resolucion_comentario, resolucion_foto_url, resuelta_at')
     .eq('ticket_number', ticketNumber)
     .maybeSingle()
 
-  if (error) throw new Error(error.message)
-  return data
+  if (errDirecto) throw new Error(errDirecto.message)
+  return directo
 }
 
 export async function getAllIncidencias(filters = {}) {
   let query = supabase
     .from('incidencias')
-    .select('ticket_number, torre, piso, zona, estado, created_at, descripcion, foto_url, resolucion_foto_url')
+    .select('ticket_number, torre, piso, zona, estado, created_at, descripcion, foto_url, resolucion_foto_url, conjunto')
     .order('created_at', { ascending: false })
 
   if (filters.torre && filters.torre !== 'all') {
@@ -178,6 +192,32 @@ export async function deleteIncidencias(incidencias, { respaldo = false } = {}) 
     if (errFoto) console.warn('Tickets eliminados, pero no se pudieron borrar algunas fotos:', errFoto.message)
   }
   return data.length
+}
+
+// ===== Respaldo (tickets eliminados con copia) =====
+export async function getRespaldo() {
+  const { data, error } = await supabase.rpc('listar_respaldo')
+  if (error) throw new Error(error.message)
+  return data || []
+}
+
+export async function restoreRespaldo(ticketNumber) {
+  const { error } = await supabase.rpc('restaurar_respaldo', { p_ticket: ticketNumber })
+  if (error) throw new Error(error.message)
+}
+
+// Borra del respaldo para siempre (y las fotos que guardaba)
+export async function deleteRespaldo(items) {
+  const lista = (items || []).filter((i) => i && i.ticket_number)
+  if (lista.length === 0) throw new Error('No hay tickets para eliminar')
+  const { data, error } = await supabase.rpc('borrar_de_respaldo', { p_tickets: lista.map((i) => i.ticket_number) })
+  if (error) throw new Error(error.message)
+  const rutas = lista.flatMap((i) => [rutaFoto(i.foto_url), rutaFoto(i.resolucion_foto_url)]).filter(Boolean)
+  if (rutas.length > 0) {
+    const { error: errFoto } = await supabase.storage.from(STORAGE_BUCKET).remove(rutas)
+    if (errFoto) console.warn('Se borraron los tickets del respaldo, pero no algunas fotos:', errFoto.message)
+  }
+  return data
 }
 
 function rutaFoto(url) {
